@@ -14,6 +14,8 @@ namespace ExpressionEvaluatorLibrary
     Context CreateContext();
 
     double Evaluate(Context context);
+
+    string GetListing();
   }
 
   public class ExpressionBuilder : IExpressionBuilder
@@ -287,8 +289,9 @@ namespace ExpressionEvaluatorLibrary
       $
       ", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
-    private ExpressionTree.Valuable _tree;
     private string _expression;
+    private Valuable _tree;
+    private Factory _factory;
     private HashSet<string> _variables;
 
     public ExpressionBuilder(string expression)
@@ -296,6 +299,7 @@ namespace ExpressionEvaluatorLibrary
       expression = expression.Replace(" ", string.Empty).Trim();
 
       _expression = expression;
+      _factory = new Factory();
       _variables = new HashSet<string>();
 
       _tree = ShuntingYard(expression);
@@ -325,63 +329,63 @@ namespace ExpressionEvaluatorLibrary
         switch (p)
         {
           case OperatorInfo.UnaryPlus:
-            valst.Push(Factory.MakePositive(a[0]));
+            valst.Push(_factory.MakePositive(a[0]));
             break;
 
           case OperatorInfo.UnaryMinus:
-            valst.Push(Factory.MakeNegative(a[0]));
+            valst.Push(_factory.MakeNegative(a[0]));
             break;
 
           case OperatorInfo.Plus:
-            valst.Push(Factory.MakeAddition(a[1], a[0]));
+            valst.Push(_factory.MakeAddition(a[1], a[0]));
             break;
 
           case OperatorInfo.Minus:
-            valst.Push(Factory.MakeSubtraction(a[1], a[0]));
+            valst.Push(_factory.MakeSubtraction(a[1], a[0]));
             break;
 
           case OperatorInfo.Star:
-            valst.Push(Factory.MakeMultiplication(a[1], a[0]));
+            valst.Push(_factory.MakeMultiplication(a[1], a[0]));
             break;
 
           case OperatorInfo.Slash:
-            valst.Push(Factory.MakeDivision(a[1], a[0]));
+            valst.Push(_factory.MakeDivision(a[1], a[0]));
             break;
 
           case OperatorInfo.Hat:
-            valst.Push(Factory.MakeExponentiation(a[1], a[0]));
+            valst.Push(_factory.MakeExponentiation(a[1], a[0]));
             break;
 
           case OperatorInfo.SinFunction:
-            valst.Push(Factory.MakeSinFunction(a[0]));
+            valst.Push(_factory.MakeSinFunction(a[0]));
             break;
 
           case OperatorInfo.CosFunction:
-            valst.Push(Factory.MakeCosFunction(a[0]));
+            valst.Push(_factory.MakeCosFunction(a[0]));
             break;
 
           case OperatorInfo.TanFunction:
-            valst.Push(Factory.MakeTanFunction(a[0]));
+            valst.Push(_factory.MakeTanFunction(a[0]));
             break;
 
           case OperatorInfo.AsinFunction:
-            valst.Push(Factory.MakeAsinFunction(a[0]));
+            valst.Push(_factory.MakeAsinFunction(a[0]));
             break;
 
           case OperatorInfo.AcosFunction:
-            valst.Push(Factory.MakeAcosFunction(a[0]));
+            valst.Push(_factory.MakeAcosFunction(a[0]));
             break;
 
           case OperatorInfo.AtanFunction:
-            valst.Push(Factory.MakeAtanFunction(a[0]));
+            valst.Push(_factory.MakeAtanFunction(a[0]));
             break;
 
           case OperatorInfo.ExpFunction:
-            valst.Push(Factory.MakeExpFunction(a[0]));
+            valst.Push(_factory.MakeExpFunction(a[0]));
             break;
 
           case OperatorInfo.LogFunction:
-            valst.Push(Factory.MakeLogFunction(a[0]));
+            valst.Push(_factory.MakeLogFunction(a[0]));
             break;
 
           case OperatorInfo.LeftParenthesis:
@@ -423,7 +427,7 @@ namespace ExpressionEvaluatorLibrary
                 try
                 {
                   double c = Convert.ToDouble(m.Groups["constant"].Value);
-                  valst.Push(Factory.MakeConstant(c));
+                  valst.Push(_factory.MakeConstant(c));
                 }
                 catch (OverflowException)
                 {
@@ -434,7 +438,7 @@ namespace ExpressionEvaluatorLibrary
               {
                 string v = m.Groups["variable"].Value;
                 _variables.Add(v);
-                valst.Push(Factory.MakeVariable(v));
+                valst.Push(_factory.MakeVariable(v));
               }
 
               state = State.ExpectOperator;
@@ -551,6 +555,11 @@ namespace ExpressionEvaluatorLibrary
       }
 
       return _tree.Evaluate(context);
+    }
+
+    public string GetListing()
+    {
+      return $"strict graph {{{_factory.GetListing()}}}";
     }
   }
 }

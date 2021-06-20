@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 using ExpressionEvaluatorLibrary;
 
@@ -25,6 +23,12 @@ namespace ExpressionEvaluator
       }
       Console.WriteLine("Result is:");
       Console.WriteLine(exprBuilder.Evaluate(context));
+
+      using (StreamWriter sw = new StreamWriter("output.dot"))
+      {
+        sw.Write(exprBuilder.GetListing());
+      }
+
       Console.ReadKey(true);
     }
   }
