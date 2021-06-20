@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Text;
-using System.Threading.Tasks;
 
 using ExpressionEvaluatorLibrary.ExpressionTree;
 using ExpressionEvaluatorLibrary.Operators;
@@ -13,6 +9,11 @@ namespace ExpressionEvaluatorLibrary
 {
   public interface IExpressionBuilder
   {
+    IReadOnlyCollection<string> GetVariables();
+
+    Context CreateContext();
+
+    double Evaluate(Context context);
   }
 
   public class ExpressionBuilder : IExpressionBuilder
@@ -197,7 +198,22 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
-    public class UninitializedException : Exception
+    public class RuntimeException : Exception
+    {
+      public RuntimeException()
+      {
+      }
+
+      public RuntimeException(string message) : base(message)
+      {
+      }
+
+      public RuntimeException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class UninitializedException : RuntimeException
     {
       public UninitializedException()
       {
@@ -208,6 +224,21 @@ namespace ExpressionEvaluatorLibrary
       }
 
       public UninitializedException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class UnboundVariableException : RuntimeException
+    {
+      public UnboundVariableException()
+      {
+      }
+
+      public UnboundVariableException(string message) : base(message)
+      {
+      }
+
+      public UnboundVariableException(string message, Exception inner) : base(message, inner)
       {
       }
     }
@@ -265,14 +296,15 @@ namespace ExpressionEvaluatorLibrary
       expression = expression.Replace(" ", string.Empty).Trim();
 
       _expression = expression;
+      _variables = new HashSet<string>();
 
-      // some code here
+      _tree = ShuntingYard(expression);
     }
 
-    private ExpressionTree.Valuable ShuntingYard(string expression)
+    private Valuable ShuntingYard(string expression)
     {
       State state = State.ExpectOperand;
-      Stack<ExpressionTree.Valuable> valst = new Stack<ExpressionTree.Valuable>();
+      Stack<Valuable> valst = new Stack<Valuable>();
       Stack<OperatorInfo> opst = new Stack<OperatorInfo>();
       Match m;
       string s = expression;
@@ -390,7 +422,7 @@ namespace ExpressionEvaluatorLibrary
               {
                 try
                 {
-                  double c = Convert.ToDouble(m.Groups["constant"].Success);
+                  double c = Convert.ToDouble(m.Groups["constant"].Value);
                   valst.Push(Factory.MakeConstant(c));
                 }
                 catch (OverflowException)
@@ -418,7 +450,7 @@ namespace ExpressionEvaluatorLibrary
             {
               bool matched = false;
 
-              while (opst.Count != 0)
+              while (opst.Count != 0 && !matched)
               {
                 if (opst.Peek() != OperatorInfo.LeftParenthesis)
                   dispatch();
@@ -448,6 +480,8 @@ namespace ExpressionEvaluatorLibrary
 
               if (!matched)
                 throw new MismatchedParenthesesException();
+
+              state = State.ExpectOperand;
             }
             else if (m.Groups["operator"].Success)
             {
@@ -462,13 +496,15 @@ namespace ExpressionEvaluatorLibrary
               {
                 OperatorInfo os = opst.Peek();
 
-                if (oc.GetPriority() > os.GetPriority() || oc.GetPriority() == os.GetPriority() && oc.GetAssociativity() == Associativity.Left)
+                if (os.GetPriority() != PriorityGroup.Primary && (oc.GetPriority() > os.GetPriority() || oc.GetPriority() == os.GetPriority() && oc.GetAssociativity() == Associativity.Left))
                   dispatch();
                 else
                   inorder = true;
               }
 
               opst.Push(oc);
+
+              state = State.ExpectOperand;
             }
             else
             {
@@ -493,10 +529,26 @@ namespace ExpressionEvaluatorLibrary
       return valst.Pop();
     }
 
+    public IReadOnlyCollection<string> GetVariables()
+    {
+      return _variables;
+    }
+
+    public Context CreateContext()
+    {
+      return new Context();
+    }
+
     public double Evaluate(Context context)
     {
       if (_tree == null)
         throw new UninitializedException();
+
+      foreach (string s in _variables)
+      {
+        if (!context.IsBound(s))
+          throw new UnboundVariableException();
+      }
 
       return _tree.Evaluate(context);
     }

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31229.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator\ExpressionEvaluator.csproj", "{081ADF4C-2CD2-4565-9278-E9415C8C1D47}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2909874A-7940-4C1E-80FA-FD08B712061E} = {2909874A-7940-4C1E-80FA-FD08B712061E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluatorLibrary", "ExpressionEvaluatorLibrary\ExpressionEvaluatorLibrary.csproj", "{2909874A-7940-4C1E-80FA-FD08B712061E}"
 EndProject
