@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using ExpressionEvaluatorLibrary.ExpressionTree;
+﻿using ExpressionEvaluatorLibrary.ExpressionTree;
 
 namespace ExpressionEvaluatorLibrary
 {

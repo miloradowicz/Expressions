@@ -7,6 +7,8 @@ namespace ExpressionEvaluatorLibrary
   {
     double this[string variable] { get; set; }
 
+    bool IsBound(string variable);
+
     void Bind(string variable, double value);
 
     void Unbind(string variable);
@@ -14,6 +16,21 @@ namespace ExpressionEvaluatorLibrary
 
   public class Context : IContext
   {
+    public class UnboundVariableException : Exception
+    {
+      public UnboundVariableException()
+      {
+      }
+
+      public UnboundVariableException(string message) : base(message)
+      {
+      }
+
+      public UnboundVariableException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
     private Dictionary<string, double> _context;
 
     internal Context()
@@ -23,8 +40,22 @@ namespace ExpressionEvaluatorLibrary
 
     public double this[string variable]
     {
-      get { return _context[variable]; }
-      set { _context[variable] = value; }
+      get
+      {
+        if (_context.ContainsKey(variable))
+          return _context[variable];
+        else
+          throw new UnboundVariableException();
+      }
+      set
+      {
+        _context[variable] = value;
+      }
+    }
+
+    public bool IsBound(string variable)
+    {
+      return _context.ContainsKey(variable);
     }
 
     public void Bind(string variable, double value)

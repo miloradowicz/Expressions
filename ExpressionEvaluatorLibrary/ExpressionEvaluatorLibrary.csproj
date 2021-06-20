@@ -47,6 +47,7 @@
     <Compile Include="Factory.cs" />
     <Compile Include="FunctionOne.cs" />
     <Compile Include="FunctionTwo.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="OperatorInfo.cs" />
     <Compile Include="Valuable.cs" />
     <Compile Include="Constant.cs" />

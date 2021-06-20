@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressionEvaluatorLibrary\ExpressionEvaluatorLibrary.csproj">
+      <Project>{2909874a-7940-4c1e-80fa-fd08b712061e}</Project>
+      <Name>ExpressionEvaluatorLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
