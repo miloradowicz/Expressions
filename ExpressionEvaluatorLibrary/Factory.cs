@@ -1,92 +1,179 @@
-﻿using ExpressionEvaluatorLibrary.ExpressionTree;
+﻿using System.Collections.Generic;
+
+using ExpressionEvaluatorLibrary.ExpressionTree;
 
 namespace ExpressionEvaluatorLibrary
 {
-  internal static class Factory
+  internal interface IFactory
   {
-    public static Constant MakeConstant(double value)
+    string GetListing();
+  }
+
+  internal class Factory
+  {
+    private string _listing;
+    private int _counter;
+    private Dictionary<Valuable, int> _nodes;
+
+    public Factory()
     {
-      return new Constant(value);
+      _listing = "\n";
+      _counter = 0;
+      _nodes = new Dictionary<Valuable, int>();
     }
 
-    public static Variable MakeVariable(string name)
+    public string GetListing()
     {
-      return new Variable(name);
+      return _listing;
     }
 
-    public static Valuable MakePositive(Valuable operand)
+    public Constant MakeConstant(double value)
+    {
+      Constant constant = new Constant(value);
+      _nodes[constant] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label={constant.Symbol}] ;\n";
+      _counter++;
+      return constant;
+    }
+
+    public Variable MakeVariable(string name)
+    {
+      Variable variable = new Variable(name);
+      _nodes[variable] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label={variable.Symbol}] ;\n";
+      _counter++;
+      return variable;
+    }
+
+    public Valuable MakePositive(Valuable operand)
     {
       return operand;
     }
 
-    public static UnaryOperation MakeNegative(Valuable operand)
+    public UnaryOperation MakeNegative(Valuable operand)
     {
-      return new UnaryOperation("-", operand);
+      UnaryOperation unary = new UnaryOperation("-", operand);
+      _nodes[unary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{unary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand]:0000} ;\n";
+      _counter++;
+      return unary;
     }
 
-    public static BinaryOperation MakeAddition(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeAddition(Valuable operand1, Valuable operand2)
     {
-      return new BinaryOperation("+", operand1, operand2);
+      BinaryOperation binary = new BinaryOperation("+", operand1, operand2);
+      _nodes[binary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
+      _counter++;
+      return binary;
     }
 
-    public static BinaryOperation MakeSubtraction(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeSubtraction(Valuable operand1, Valuable operand2)
     {
-      return new BinaryOperation("-", operand1, operand2);
+      BinaryOperation binary = new BinaryOperation("-", operand1, operand2);
+      _nodes[binary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
+      _counter++;
+      return binary;
     }
 
-    public static BinaryOperation MakeMultiplication(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeMultiplication(Valuable operand1, Valuable operand2)
     {
-      return new BinaryOperation("*", operand1, operand2);
+      BinaryOperation binary = new BinaryOperation("*", operand1, operand2);
+      _nodes[binary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
+      _counter++;
+      return binary;
     }
 
-    public static BinaryOperation MakeDivision(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeDivision(Valuable operand1, Valuable operand2)
     {
-      return new BinaryOperation("/", operand1, operand2);
+      BinaryOperation binary = new BinaryOperation("/", operand1, operand2);
+      _nodes[binary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
+      _counter++;
+      return binary;
     }
 
-    public static BinaryOperation MakeExponentiation(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeExponentiation(Valuable operand1, Valuable operand2)
     {
-      return new BinaryOperation("^", operand1, operand2);
+      BinaryOperation binary = new BinaryOperation("^", operand1, operand2);
+      _nodes[binary] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
+      _counter++;
+      return binary;
     }
 
-    public static FunctionOne MakeSinFunction(Valuable operand)
+    public FunctionOne MakeSinFunction(Valuable argument)
     {
-      return new FunctionOne("sin", operand);
+      FunctionOne function = new FunctionOne("sin", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeCosFunction(Valuable operand)
+    public FunctionOne MakeCosFunction(Valuable argument)
     {
-      return new FunctionOne("cos", operand);
+      FunctionOne function = new FunctionOne("cos", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeTanFunction(Valuable operand)
+    public FunctionOne MakeTanFunction(Valuable argument)
     {
-      return new FunctionOne("tan", operand);
+      FunctionOne function = new FunctionOne("tan", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeAsinFunction(Valuable operand)
+    public FunctionOne MakeAsinFunction(Valuable argument)
     {
-      return new FunctionOne("asin", operand);
+      FunctionOne function = new FunctionOne("asin", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeAcosFunction(Valuable operand)
+    public FunctionOne MakeAcosFunction(Valuable argument)
     {
-      return new FunctionOne("acos", operand);
+      FunctionOne function = new FunctionOne("acos", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeAtanFunction(Valuable operand)
+    public FunctionOne MakeAtanFunction(Valuable argument)
     {
-      return new FunctionOne("atan", operand);
+      FunctionOne function = new FunctionOne("atan", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeExpFunction(Valuable operand)
+    public FunctionOne MakeExpFunction(Valuable argument)
     {
-      return new FunctionOne("exp", operand);
+      FunctionOne function = new FunctionOne("exp", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
 
-    public static FunctionOne MakeLogFunction(Valuable operand)
+    public FunctionOne MakeLogFunction(Valuable argument)
     {
-      return new FunctionOne("log", operand);
+      FunctionOne function = new FunctionOne("log", argument);
+      _nodes[function] = _counter;
+      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
+      _counter++;
+      return function;
     }
   }
 }
