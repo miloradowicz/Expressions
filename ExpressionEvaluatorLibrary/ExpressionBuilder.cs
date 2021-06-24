@@ -1,9 +1,8 @@
-﻿using System;
+﻿using ExpressionEvaluatorLibrary.ExpressionTree;
+using ExpressionEvaluatorLibrary.Operators;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
-using ExpressionEvaluatorLibrary.ExpressionTree;
-using ExpressionEvaluatorLibrary.Operators;
 
 namespace ExpressionEvaluatorLibrary
 {
@@ -11,9 +10,9 @@ namespace ExpressionEvaluatorLibrary
   {
     IReadOnlyCollection<string> GetVariables();
 
-    Context CreateContext();
+    double Evaluate(IReadOnlyContext context);
 
-    double Evaluate(Context context);
+    double Solve(IReadOnlyContext context, string unknown, double guess, double error, int steps);
 
     string GetListing();
   }
@@ -50,6 +49,51 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
+    public class RuntimeException : Exception
+    {
+      public RuntimeException()
+      {
+      }
+
+      public RuntimeException(string message) : base(message)
+      {
+      }
+
+      public RuntimeException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class SolveException : Exception
+    {
+      public SolveException()
+      {
+      }
+
+      public SolveException(string message) : base(message)
+      {
+      }
+
+      public SolveException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class EmptyExpressionException : Exception
+    {
+      public EmptyExpressionException()
+      {
+      }
+
+      public EmptyExpressionException(string message) : base(message)
+      {
+      }
+
+      public EmptyExpressionException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
     public class UnrecognizedSymbolException : BadInputException
     {
       public UnrecognizedSymbolException()
@@ -80,32 +124,32 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
-    public class UnrecognizedOperationException : BadInputException
+    public class UnsupportedOperationException : BadInputException
     {
-      public UnrecognizedOperationException()
+      public UnsupportedOperationException()
       {
       }
 
-      public UnrecognizedOperationException(string message) : base(message)
+      public UnsupportedOperationException(string message) : base(message)
       {
       }
 
-      public UnrecognizedOperationException(string message, Exception inner) : base(message, inner)
+      public UnsupportedOperationException(string message, Exception inner) : base(message, inner)
       {
       }
     }
 
-    public class UnrecognizedFunctionException : BadInputException
+    public class UnsupportedFunctionException : BadInputException
     {
-      public UnrecognizedFunctionException()
+      public UnsupportedFunctionException()
       {
       }
 
-      public UnrecognizedFunctionException(string message) : base(message)
+      public UnsupportedFunctionException(string message) : base(message)
       {
       }
 
-      public UnrecognizedFunctionException(string message, Exception inner) : base(message, inner)
+      public UnsupportedFunctionException(string message, Exception inner) : base(message, inner)
       {
       }
     }
@@ -200,21 +244,6 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
-    public class RuntimeException : Exception
-    {
-      public RuntimeException()
-      {
-      }
-
-      public RuntimeException(string message) : base(message)
-      {
-      }
-
-      public RuntimeException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
     public class UninitializedException : RuntimeException
     {
       public UninitializedException()
@@ -245,6 +274,51 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
+    public class InvalidVariableException : RuntimeException
+    {
+      public InvalidVariableException()
+      {
+      }
+
+      public InvalidVariableException(string message) : base(message)
+      {
+      }
+
+      public InvalidVariableException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class InvalidConstraintException : SolveException
+    {
+      public InvalidConstraintException()
+      {
+      }
+
+      public InvalidConstraintException(string message) : base(message)
+      {
+      }
+
+      public InvalidConstraintException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
+    public class CouldNotSolveException : SolveException
+    {
+      public CouldNotSolveException()
+      {
+      }
+
+      public CouldNotSolveException(string message) : base(message)
+      {
+      }
+
+      public CouldNotSolveException(string message, Exception inner) : base(message, inner)
+      {
+      }
+    }
+
     private enum State
     {
       ExpectOperand,
@@ -252,7 +326,7 @@ namespace ExpressionEvaluatorLibrary
     };
 
     private static readonly Regex TokenRegex = new Regex(@"
-      ^
+      ^\s*
       (?<token>
         (?<comma>,) |
         (?<parenthesis>
@@ -289,6 +363,11 @@ namespace ExpressionEvaluatorLibrary
       $
       ", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
+    static public Context CreateContext()
+    {
+      return new Context();
+    }
+
     private string _expression;
     private Valuable _tree;
     private Factory _factory;
@@ -296,7 +375,10 @@ namespace ExpressionEvaluatorLibrary
 
     public ExpressionBuilder(string expression)
     {
-      expression = expression.Replace(" ", string.Empty).Trim();
+      expression = expression.Trim();
+
+      if (expression.Length == 0)
+        throw new EmptyExpressionException();
 
       _expression = expression;
       _factory = new Factory();
@@ -415,7 +497,7 @@ namespace ExpressionEvaluatorLibrary
             else if (m.Groups["function"].Success)
             {
               if (m.Groups["unrecognized"].Success)
-                throw new UnrecognizedFunctionException();
+                throw new UnsupportedFunctionException();
 
               string f = m.Groups["function"].Value;
               opst.Push(Helpers.GetFunction(f));
@@ -490,7 +572,7 @@ namespace ExpressionEvaluatorLibrary
             else if (m.Groups["operator"].Success)
             {
               if (m.Groups["unrecognized"].Success)
-                throw new UnrecognizedOperationException();
+                throw new UnsupportedOperationException();
 
               string p = m.Groups["operator"].Value;
               OperatorInfo oc = Helpers.GetBinary(p);
@@ -533,17 +615,44 @@ namespace ExpressionEvaluatorLibrary
       return valst.Pop();
     }
 
+    private double Steffensen(Dictionary<double, double> memo, IContext context, string unknown, double error, int steps)
+    {
+      if (steps <= 0)
+        throw new CouldNotSolveException();
+
+      double x, fx, gx, xn, fxn;
+      x = context[unknown];
+      if (memo.ContainsKey(x))
+      {
+        fx = memo[x];
+      }
+      else
+      {
+        fx = _tree.Evaluate(context);
+        memo[x] = fx;
+      }
+
+      if (Math.Abs(fx) < error)
+        return x;
+
+      context[unknown] = x + fx;
+      gx = _tree.Evaluate(context) / fx - 1;
+      xn = x - fx / gx;
+      context[unknown] = xn;
+      fxn = _tree.Evaluate(context);
+      memo[xn] = fxn;
+      return Steffensen(memo, context, unknown, error, steps - 1);
+    }
+
     public IReadOnlyCollection<string> GetVariables()
     {
-      return _variables;
+      if (_tree == null)
+        throw new UninitializedException();
+
+      return _variables.AsReadOnly<string>();
     }
 
-    public Context CreateContext()
-    {
-      return new Context();
-    }
-
-    public double Evaluate(Context context)
+    public double Evaluate(IReadOnlyContext context)
     {
       if (_tree == null)
         throw new UninitializedException();
@@ -557,8 +666,32 @@ namespace ExpressionEvaluatorLibrary
       return _tree.Evaluate(context);
     }
 
+    public double Solve(IReadOnlyContext context, string unknown, double guess, double error, int steps)
+    {
+      if (!_variables.Contains(unknown))
+        throw new InvalidVariableException();
+
+      foreach (string v in _variables)
+      {
+        if (!context.IsBound(v) && v != unknown)
+          throw new UnboundVariableException();
+      }
+
+      if (error <= 0 || steps <= 0)
+        throw new InvalidConstraintException();
+
+      Dictionary<double, double> memo = new Dictionary<double, double>();
+      Context clonetext = context.Clone();
+      clonetext[unknown] = guess;
+
+      return Steffensen(memo, clonetext, unknown, error, steps);
+    }
+
     public string GetListing()
     {
+      if (_tree == null)
+        throw new UninitializedException();
+
       return $"strict graph {{{_factory.GetListing()}}}";
     }
   }

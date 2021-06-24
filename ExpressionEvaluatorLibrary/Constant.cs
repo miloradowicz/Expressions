@@ -21,7 +21,7 @@ namespace ExpressionEvaluatorLibrary
         }
       }
 
-      public override double Evaluate(Context context)
+      public override double Evaluate(IReadOnlyContext context)
       {
         return _value;
       }

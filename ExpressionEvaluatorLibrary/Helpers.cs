@@ -1,11 +1,34 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
-using ExpressionEvaluatorLibrary.ExpressionTree;
 using ExpressionEvaluatorLibrary.Operators;
 
 namespace ExpressionEvaluatorLibrary
 {
+  public static class MyExtensions
+  {
+    public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> source)
+    {
+      if (source == null) throw new ArgumentNullException("source");
+      return source as IReadOnlyCollection<T> ?? new ReadOnlyCollectionAdapter<T>(source);
+    }
+
+    private sealed class ReadOnlyCollectionAdapter<T> : IReadOnlyCollection<T>
+    {
+      private readonly ICollection<T> source;
+
+      public ReadOnlyCollectionAdapter(ICollection<T> source) => this.source = source;
+
+      public int Count => source.Count;
+
+      public IEnumerator<T> GetEnumerator() => source.GetEnumerator();
+
+      IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+  }
+
   internal static partial class Helpers
   {
     internal static OperatorInfo GetUnary(string symbol)
