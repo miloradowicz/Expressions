@@ -3,11 +3,20 @@ using System.Collections.Generic;
 
 namespace ExpressionEvaluatorLibrary
 {
-  internal interface IContext
+  public interface IReadOnlyContext
   {
-    double this[string variable] { get; set; }
+    double this[string variable] { get; }
+
+    IReadOnlyCollection<string> GetBoundVariables();
+
+    Context Clone();
 
     bool IsBound(string variable);
+  }
+
+  internal interface IContext : IReadOnlyContext
+  {
+    new double this[string variable] { get; set; }
 
     void Bind(string variable, double value);
 
@@ -51,6 +60,19 @@ namespace ExpressionEvaluatorLibrary
       {
         _context[variable] = value;
       }
+    }
+
+    public Context Clone()
+    {
+      Context c = new Context();
+      foreach (var v in _context)
+        c._context.Add(v.Key, v.Value);
+      return c;
+    }
+
+    public IReadOnlyCollection<string> GetBoundVariables()
+    {
+      return _context.Keys.AsReadOnly<string>();
     }
 
     public bool IsBound(string variable)

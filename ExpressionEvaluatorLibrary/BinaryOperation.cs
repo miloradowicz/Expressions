@@ -41,7 +41,7 @@ namespace ExpressionEvaluatorLibrary
         get { return _name; }
       }
 
-      public override double Evaluate(Context context)
+      public override double Evaluate(IReadOnlyContext context)
       {
         return _action(_operand1.Evaluate(context), _operand2.Evaluate(context));
       }

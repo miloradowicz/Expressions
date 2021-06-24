@@ -16,7 +16,7 @@
         get { return _name; }
       }
 
-      public override double Evaluate(Context context)
+      public override double Evaluate(IReadOnlyContext context)
       {
         return context[_name];
       }

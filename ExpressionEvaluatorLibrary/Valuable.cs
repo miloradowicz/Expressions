@@ -6,14 +6,14 @@
     {
       string Symbol { get; }
 
-      double Evaluate(Context context);
+      double Evaluate(IReadOnlyContext context);
     }
 
     internal abstract class Valuable : IValuable
     {
       public abstract string Symbol { get; }
 
-      public abstract double Evaluate(Context context);
+      public abstract double Evaluate(IReadOnlyContext context);
     }
   }
 }
