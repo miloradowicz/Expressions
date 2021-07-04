@@ -16,6 +16,8 @@ namespace ExpressionEvaluatorLibrary
 
   internal interface IContext : IReadOnlyContext
   {
+    IReadOnlyContext AsReadOnly();
+
     new double this[string variable] { get; set; }
 
     void Bind(string variable, double value);
@@ -47,6 +49,11 @@ namespace ExpressionEvaluatorLibrary
       _context = new Dictionary<string, double>();
     }
 
+    public IReadOnlyContext AsReadOnly()
+    {
+      return new ReadOnlyContext(this);
+    }
+
     public double this[string variable]
     {
       get
@@ -72,7 +79,7 @@ namespace ExpressionEvaluatorLibrary
 
     public IReadOnlyCollection<string> GetBoundVariables()
     {
-      return _context.Keys.AsReadOnly<string>();
+      return _context.Keys.AsReadOnly();
     }
 
     public bool IsBound(string variable)
@@ -88,6 +95,39 @@ namespace ExpressionEvaluatorLibrary
     public void Unbind(string variable)
     {
       _context.Remove(variable);
+    }
+  }
+
+  public class ReadOnlyContext : IReadOnlyContext
+  {
+    private Context _context;
+
+    internal ReadOnlyContext(Context context)
+    {
+      _context = context;
+    }
+
+    public double this[string variable]
+    {
+      get
+      {
+        return _context[variable];
+      }
+    }
+
+    public IReadOnlyCollection<string> GetBoundVariables()
+    {
+      return _context.GetBoundVariables();
+    }
+
+    public Context Clone()
+    {
+      return _context.Clone();
+    }
+
+    public bool IsBound(string variable)
+    {
+      return _context.IsBound(variable);
     }
   }
 }
