@@ -51,7 +51,7 @@
     <Compile Include="FunctionTwo.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="OperatorInfo.cs" />
-    <Compile Include="Valuable.cs" />
+    <Compile Include="IValuable.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnaryOperation.cs" />

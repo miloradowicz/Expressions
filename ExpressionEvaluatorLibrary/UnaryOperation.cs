@@ -4,7 +4,7 @@ namespace ExpressionEvaluatorLibrary
 {
   namespace ExpressionTree
   {
-    internal class UnaryOperation : Valuable
+    internal class UnaryOperation : IValuable
     {
       internal delegate double UnaryDelegate(double operand);
 
@@ -16,26 +16,26 @@ namespace ExpressionEvaluatorLibrary
 
       protected readonly string _name;
       protected readonly UnaryDelegate _action;
-      protected readonly Valuable _operand;
+      protected readonly IValuable _operand;
 
       protected virtual UnaryDelegate GetAction()
       {
         return Operations[_name];
       }
 
-      public UnaryOperation(string name, Valuable operand)
+      public UnaryOperation(string name, IValuable operand)
       {
         _name = name;
         _action = GetAction();
         _operand = operand;
       }
 
-      public override string Symbol
+      public string Symbol
       {
         get { return _name; }
       }
 
-      public override double Evaluate(IReadOnlyContext context)
+      public double Evaluate(IReadOnlyContext context)
       {
         return _action(_operand.Evaluate(context));
       }

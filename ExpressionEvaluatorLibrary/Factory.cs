@@ -12,18 +12,25 @@ namespace ExpressionEvaluatorLibrary
   {
     private string _listing;
     private int _counter;
-    private Dictionary<Valuable, int> _nodes;
+    private HashSet<string> _variables;
+    private Dictionary<IValuable, int> _nodes;
 
     public Factory()
     {
       _listing = "\n";
       _counter = 0;
-      _nodes = new Dictionary<Valuable, int>();
+      _variables = new HashSet<string>();
+      _nodes = new Dictionary<IValuable, int>();
     }
 
     public string GetListing()
     {
       return _listing;
+    }
+
+    public IReadOnlyCollection<string> GetVariables()
+    {
+      return _variables.AsReadOnly();
     }
 
     public Constant MakeConstant(double value)
@@ -37,6 +44,7 @@ namespace ExpressionEvaluatorLibrary
 
     public Variable MakeVariable(string name)
     {
+      _variables.Add(name);
       Variable variable = new Variable(name);
       _nodes[variable] = _counter;
       _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label={variable.Symbol}] ;\n";
@@ -44,12 +52,12 @@ namespace ExpressionEvaluatorLibrary
       return variable;
     }
 
-    public Valuable MakePositive(Valuable operand)
+    public IValuable MakePositive(IValuable operand)
     {
       return operand;
     }
 
-    public UnaryOperation MakeNegative(Valuable operand)
+    public UnaryOperation MakeNegative(IValuable operand)
     {
       UnaryOperation unary = new UnaryOperation("-", operand);
       _nodes[unary] = _counter;
@@ -58,7 +66,7 @@ namespace ExpressionEvaluatorLibrary
       return unary;
     }
 
-    public BinaryOperation MakeAddition(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeAddition(IValuable operand1, IValuable operand2)
     {
       BinaryOperation binary = new BinaryOperation("+", operand1, operand2);
       _nodes[binary] = _counter;
@@ -67,7 +75,7 @@ namespace ExpressionEvaluatorLibrary
       return binary;
     }
 
-    public BinaryOperation MakeSubtraction(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeSubtraction(IValuable operand1, IValuable operand2)
     {
       BinaryOperation binary = new BinaryOperation("-", operand1, operand2);
       _nodes[binary] = _counter;
@@ -76,7 +84,7 @@ namespace ExpressionEvaluatorLibrary
       return binary;
     }
 
-    public BinaryOperation MakeMultiplication(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeMultiplication(IValuable operand1, IValuable operand2)
     {
       BinaryOperation binary = new BinaryOperation("*", operand1, operand2);
       _nodes[binary] = _counter;
@@ -85,7 +93,7 @@ namespace ExpressionEvaluatorLibrary
       return binary;
     }
 
-    public BinaryOperation MakeDivision(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeDivision(IValuable operand1, IValuable operand2)
     {
       BinaryOperation binary = new BinaryOperation("/", operand1, operand2);
       _nodes[binary] = _counter;
@@ -94,7 +102,7 @@ namespace ExpressionEvaluatorLibrary
       return binary;
     }
 
-    public BinaryOperation MakeExponentiation(Valuable operand1, Valuable operand2)
+    public BinaryOperation MakeExponentiation(IValuable operand1, IValuable operand2)
     {
       BinaryOperation binary = new BinaryOperation("^", operand1, operand2);
       _nodes[binary] = _counter;
@@ -103,7 +111,7 @@ namespace ExpressionEvaluatorLibrary
       return binary;
     }
 
-    public FunctionOne MakeSinFunction(Valuable argument)
+    public FunctionOne MakeSinFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("sin", argument);
       _nodes[function] = _counter;
@@ -112,7 +120,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeCosFunction(Valuable argument)
+    public FunctionOne MakeCosFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("cos", argument);
       _nodes[function] = _counter;
@@ -121,7 +129,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeTanFunction(Valuable argument)
+    public FunctionOne MakeTanFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("tan", argument);
       _nodes[function] = _counter;
@@ -130,7 +138,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeAsinFunction(Valuable argument)
+    public FunctionOne MakeAsinFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("asin", argument);
       _nodes[function] = _counter;
@@ -139,7 +147,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeAcosFunction(Valuable argument)
+    public FunctionOne MakeAcosFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("acos", argument);
       _nodes[function] = _counter;
@@ -148,7 +156,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeAtanFunction(Valuable argument)
+    public FunctionOne MakeAtanFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("atan", argument);
       _nodes[function] = _counter;
@@ -157,7 +165,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeExpFunction(Valuable argument)
+    public FunctionOne MakeExpFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("exp", argument);
       _nodes[function] = _counter;
@@ -166,7 +174,7 @@ namespace ExpressionEvaluatorLibrary
       return function;
     }
 
-    public FunctionOne MakeLogFunction(Valuable argument)
+    public FunctionOne MakeLogFunction(IValuable argument)
     {
       FunctionOne function = new FunctionOne("log", argument);
       _nodes[function] = _counter;

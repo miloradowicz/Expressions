@@ -2,7 +2,7 @@
 {
   namespace ExpressionTree
   {
-    internal sealed class Variable : Valuable
+    internal sealed class Variable : IValuable
     {
       private readonly string _name;
 
@@ -11,12 +11,12 @@
         _name = name;
       }
 
-      public override string Symbol
+      public string Symbol
       {
         get { return _name; }
       }
 
-      public override double Evaluate(IReadOnlyContext context)
+      public double Evaluate(IReadOnlyContext context)
       {
         return context[_name];
       }

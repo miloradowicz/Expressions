@@ -24,7 +24,7 @@ namespace ExpressionEvaluatorLibrary
         return Functions[_name];
       }
 
-      public FunctionOne(string name, Valuable argument) : base(name, argument)
+      public FunctionOne(string name, IValuable argument) : base(name, argument)
       {
       }
     }
