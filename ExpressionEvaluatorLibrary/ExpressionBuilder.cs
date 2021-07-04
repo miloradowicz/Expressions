@@ -369,9 +369,8 @@ namespace ExpressionEvaluatorLibrary
     }
 
     private string _expression;
-    private Valuable _tree;
+    private IValuable _tree;
     private Factory _factory;
-    private HashSet<string> _variables;
 
     public ExpressionBuilder(string expression)
     {
@@ -382,15 +381,14 @@ namespace ExpressionEvaluatorLibrary
 
       _expression = expression;
       _factory = new Factory();
-      _variables = new HashSet<string>();
 
       _tree = ShuntingYard(expression);
     }
 
-    private Valuable ShuntingYard(string expression)
+    private IValuable ShuntingYard(string expression)
     {
       State state = State.ExpectOperand;
-      Stack<Valuable> valst = new Stack<Valuable>();
+      Stack<IValuable> valst = new Stack<IValuable>();
       Stack<OperatorInfo> opst = new Stack<OperatorInfo>();
       Match m;
       string s = expression;
@@ -398,7 +396,7 @@ namespace ExpressionEvaluatorLibrary
       Action dispatch = () =>
       {
         OperatorInfo p = opst.Pop();
-        List<Valuable> a = new List<Valuable>();
+        List<IValuable> a = new List<IValuable>();
 
         for (int i = 0; i < p.GetArity(); i++)
         {
@@ -519,7 +517,6 @@ namespace ExpressionEvaluatorLibrary
               else if (m.Groups["variable"].Success)
               {
                 string v = m.Groups["variable"].Value;
-                _variables.Add(v);
                 valst.Push(_factory.MakeVariable(v));
               }
 
@@ -596,7 +593,6 @@ namespace ExpressionEvaluatorLibrary
             {
               throw new OperatorExpectedException();
             }
-
             break;
         }
       }
@@ -615,33 +611,33 @@ namespace ExpressionEvaluatorLibrary
       return valst.Pop();
     }
 
-    private double Steffensen(Dictionary<double, double> memo, IContext context, string unknown, double error, int steps)
+    private double Steffensen(IContext context, string unknown, double error, int steps)
     {
-      if (steps <= 0)
-        throw new CouldNotSolveException();
+      int n = steps;
+      bool solved = false;
+      double fx, gx;
 
-      double x, fx, gx, xn, fxn;
-      x = context[unknown];
-      if (memo.ContainsKey(x))
-      {
-        fx = memo[x];
-      }
-      else
+      while (!solved && n > 0)
       {
         fx = _tree.Evaluate(context);
-        memo[x] = fx;
+
+        if (Math.Abs(fx) < error)
+        {
+          solved = true;
+        }
+        else
+        {
+          context[unknown] += fx;
+          gx = _tree.Evaluate(context) / fx - 1;
+          context[unknown] -= fx / gx;
+          n--;
+        }
       }
 
-      if (Math.Abs(fx) < error)
-        return x;
+      if (!solved)
+        throw new CouldNotSolveException();
 
-      context[unknown] = x + fx;
-      gx = _tree.Evaluate(context) / fx - 1;
-      xn = x - fx / gx;
-      context[unknown] = xn;
-      fxn = _tree.Evaluate(context);
-      memo[xn] = fxn;
-      return Steffensen(memo, context, unknown, error, steps - 1);
+      return context[unknown];
     }
 
     public IReadOnlyCollection<string> GetVariables()
@@ -649,15 +645,14 @@ namespace ExpressionEvaluatorLibrary
       if (_tree == null)
         throw new UninitializedException();
 
-      return _variables.AsReadOnly<string>();
+      return _factory.GetVariables();
     }
 
     public double Evaluate(IReadOnlyContext context)
     {
-      if (_tree == null)
-        throw new UninitializedException();
+      var variables = GetVariables();
 
-      foreach (string s in _variables)
+      foreach (string s in variables)
       {
         if (!context.IsBound(s))
           throw new UnboundVariableException();
@@ -668,23 +663,27 @@ namespace ExpressionEvaluatorLibrary
 
     public double Solve(IReadOnlyContext context, string unknown, double guess, double error, int steps)
     {
-      if (!_variables.Contains(unknown))
-        throw new InvalidVariableException();
+      var variables = GetVariables();
+      bool found = false;
 
-      foreach (string v in _variables)
+      foreach (string v in variables)
       {
-        if (!context.IsBound(v) && v != unknown)
+        if (v == unknown)
+          found = true;
+        else if (!context.IsBound(v))
           throw new UnboundVariableException();
       }
+
+      if (!found)
+        throw new InvalidVariableException();
 
       if (error <= 0 || steps <= 0)
         throw new InvalidConstraintException();
 
-      Dictionary<double, double> memo = new Dictionary<double, double>();
       Context clonetext = context.Clone();
       clonetext[unknown] = guess;
 
-      return Steffensen(memo, clonetext, unknown, error, steps);
+      return Steffensen(clonetext, unknown, error, steps);
     }
 
     public string GetListing()

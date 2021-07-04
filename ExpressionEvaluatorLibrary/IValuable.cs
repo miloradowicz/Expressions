@@ -8,12 +8,5 @@
 
       double Evaluate(IReadOnlyContext context);
     }
-
-    internal abstract class Valuable : IValuable
-    {
-      public abstract string Symbol { get; }
-
-      public abstract double Evaluate(IReadOnlyContext context);
-    }
   }
 }

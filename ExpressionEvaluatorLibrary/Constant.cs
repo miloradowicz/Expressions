@@ -4,7 +4,7 @@ namespace ExpressionEvaluatorLibrary
 {
   namespace ExpressionTree
   {
-    internal sealed class Constant : Valuable
+    internal sealed class Constant : IValuable
     {
       private readonly double _value;
 
@@ -13,7 +13,7 @@ namespace ExpressionEvaluatorLibrary
         _value = value;
       }
 
-      public override string Symbol
+      public string Symbol
       {
         get
         {
@@ -21,7 +21,7 @@ namespace ExpressionEvaluatorLibrary
         }
       }
 
-      public override double Evaluate(IReadOnlyContext context)
+      public double Evaluate(IReadOnlyContext context)
       {
         return _value;
       }

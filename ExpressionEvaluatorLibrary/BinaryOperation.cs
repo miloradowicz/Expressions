@@ -5,7 +5,7 @@ namespace ExpressionEvaluatorLibrary
 {
   namespace ExpressionTree
   {
-    internal class BinaryOperation : Valuable
+    internal class BinaryOperation : IValuable
     {
       internal delegate double BinaryDelegate(double operand1, double operand2);
 
@@ -20,15 +20,15 @@ namespace ExpressionEvaluatorLibrary
 
       protected readonly string _name;
       protected readonly BinaryDelegate _action;
-      protected readonly Valuable _operand1;
-      protected readonly Valuable _operand2;
+      protected readonly IValuable _operand1;
+      protected readonly IValuable _operand2;
 
       protected virtual BinaryDelegate GetAction()
       {
         return Operations[_name];
       }
 
-      public BinaryOperation(string name, Valuable operand1, Valuable operand2)
+      public BinaryOperation(string name, IValuable operand1, IValuable operand2)
       {
         _name = name;
         _action = GetAction();
@@ -36,12 +36,12 @@ namespace ExpressionEvaluatorLibrary
         _operand2 = operand2;
       }
 
-      public override string Symbol
+      public string Symbol
       {
         get { return _name; }
       }
 
-      public override double Evaluate(IReadOnlyContext context)
+      public double Evaluate(IReadOnlyContext context)
       {
         return _action(_operand1.Evaluate(context), _operand2.Evaluate(context));
       }
