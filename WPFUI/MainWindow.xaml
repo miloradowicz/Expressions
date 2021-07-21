@@ -1,0 +1,215 @@
+﻿<Window x:Class="WPFUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPFUI"
+        xmlns:vm="clr-namespace:WPFUI.ViewModels"
+        xmlns:conv="clr-namespace:WPFUI.Converters"
+        xmlns:val="clr-namespace:WPFUI.Validators"
+        mc:Ignorable="d"
+        Title="Expression Evaluator"
+        Height="500" Width="800"
+        MinHeight="500" MinWidth="800"
+        Icon="images/pi-logo32.png">
+    <Window.Resources>
+        <!--#region ViewModels-->
+        <vm:ContextListViewModel x:Key="contextCollection" />
+        <!--#endregion ViewModels-->
+        <!--#region Converters-->
+        <conv:NotConverter x:Key="notConverter" />
+        <conv:IsNullConverter x:Key="isNullConverter" />
+        <conv:IsNullOrEmpty x:Key="isNullOrEmptyConverter" />
+        <conv:ValueConverterGroup x:Key="isNotNullConverter">
+            <StaticResource ResourceKey="isNullConverter" />
+            <StaticResource ResourceKey="notConverter" />
+        </conv:ValueConverterGroup>
+        <conv:ValueConverterGroup x:Key="isNotNullOrEmptyConverter">
+            <StaticResource ResourceKey="isNullOrEmptyConverter" />
+            <StaticResource ResourceKey="notConverter" />
+        </conv:ValueConverterGroup>
+        <!--#endregion Converters-->
+        <!--#region Validators-->
+        <!--#endregion Validators-->
+        <!--#region Templates-->
+        <DataTemplate x:Key="contextTemplate">
+            <DataGrid AutoGenerateColumns="False"
+                      CanUserAddRows="True"
+                      CanUserDeleteRows="True"
+                      CanUserReorderColumns="False"
+                      CanUserResizeColumns="False"
+                      CanUserResizeRows="False"
+                      GridLinesVisibility="None"
+                      HeadersVisibility="Column"
+                      ItemsSource="{Binding}">
+                <DataGrid.Resources>
+                    <val:BindingValidationRule x:Key="bindingValidator" />
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Variable" Width="0.75*">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="Name">
+                            </Binding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Value" Width="*"
+                                        Binding="{Binding Value}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="IsEnabled" Value="{Binding Name,Mode=OneWay,Converter={StaticResource isNotNullOrEmptyConverter}}" />
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DataTemplate>
+        <!--#endregion Templates-->
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="250" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        <GroupBox Grid.Row="0" Grid.Column="0"
+                  Grid.ColumnSpan="2"
+                  Header="Expression">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Row="0" Grid.Column="0"
+                         Grid.RowSpan="3" />
+                <Button Grid.Row="0" Grid.Column="1"
+                        Name="LoadExpressionButton"
+                        Content="Load" />
+                <Button Grid.Row="1" Grid.Column="1"
+                        Name="StoreExpressionButton"
+                        Content="Store" />
+                <Button Grid.Row="2" Grid.Column="1"
+                        Name="ClearExpressionbutton"
+                        Content="Clear" />
+                <GroupBox Grid.Row="3" Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          Header="Variables">
+                    <TextBlock />
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Grid.Column="0"
+                  Header="Contexts"
+                  DataContext="{Binding Source={StaticResource contextCollection}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="50" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0"
+                          x:Name="ContextsList"
+                          ItemsSource="{Binding}"
+                          DisplayMemberPath="Key"
+                          SelectedValuePath="Value"
+                          IsSynchronizedWithCurrentItem="True" />
+                <Popup Name="NewContextNamePopup"
+                       IsOpen="{Binding IsChecked,ElementName=NewContextButton}">
+                    <Grid Background="AliceBlue">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="Name:" />
+                        <TextBox Grid.Column="1"
+                                 Text="Enter a name for the new context" />
+                        <ToggleButton Grid.Column="2"
+                                      Name="NewContextNameOkButton"
+                                      Content="OK"
+                                      IsChecked="{Binding IsChecked,ElementName=NewContextButton,Converter={StaticResource notConverter}}" />
+                    </Grid>
+                </Popup>
+                <ToggleButton Grid.Column="1"
+                              Name="NewContextButton"
+                              Content="New"
+                              IsHitTestVisible="{Binding IsChecked,RelativeSource={RelativeSource Self},Converter={StaticResource notConverter}}">
+                </ToggleButton>
+                <Button Grid.Column="2"
+                        Name="DropContextButton"
+                        Content="Drop"
+                        Command="{Binding DropContext}"
+                        CommandParameter="{Binding /}"
+                        IsEnabled="{Binding SelectedValue,ElementName=ContextsList,Converter={StaticResource isNotNullConverter}}" />
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="2" Grid.Column="0"
+                  Grid.RowSpan="2"
+                  Header="BindingsTable"
+                  DataContext="{Binding Source={StaticResource contextCollection}}">
+            <ContentControl x:Name="BindingsList"
+                            Content="{Binding /Value}"
+                            ContentTemplate="{StaticResource contextTemplate}" />
+        </GroupBox>
+        <TabControl Grid.Row="1" Grid.Column="1"
+                    Grid.RowSpan="2"
+                    TabStripPlacement="Top">
+            <TabItem Header="Evaluate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <GroupBox Grid.Row="0"
+                              Header="Result">
+                        <TextBlock />
+                    </GroupBox>
+                    <Button Grid.Row="1"
+                            Content="Evaluate" />
+                    <Button Grid.Row="2"
+                            Content="Expression tree" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Plot">
+                <Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Solve">
+                <Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <StackPanel Grid.Row="4" Grid.Column="1">
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="TextAlignment" Value="Right" />
+                </Style>
+            </StackPanel.Resources>
+            <TextBlock Text="Expression Evaluator © 2021" />
+            <TextBlock Text="by miloradowicz" />
+            <TextBlock>
+                <Hyperlink NavigateUri="github.com/miloradowicz">
+                    github.com/miloradowicz
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock>
+                Icons by
+                <Hyperlink NavigateUri="https://www.vecteezy.com/free-vector/math">
+                    Vecteezy
+                </Hyperlink>
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</Window>
