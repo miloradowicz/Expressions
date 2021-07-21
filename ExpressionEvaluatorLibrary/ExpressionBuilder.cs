@@ -408,31 +408,31 @@ namespace ExpressionEvaluatorLibrary
 
         switch (p)
         {
-          case OperatorInfo.UnaryPlus:
+          case OperatorInfo.UnaryPlusOperator:
             valst.Push(_factory.MakePositive(a[0]));
             break;
 
-          case OperatorInfo.UnaryMinus:
+          case OperatorInfo.UnaryMinusOperator:
             valst.Push(_factory.MakeNegative(a[0]));
             break;
 
-          case OperatorInfo.Plus:
+          case OperatorInfo.PlusOperator:
             valst.Push(_factory.MakeAddition(a[1], a[0]));
             break;
 
-          case OperatorInfo.Minus:
+          case OperatorInfo.MinusOperator:
             valst.Push(_factory.MakeSubtraction(a[1], a[0]));
             break;
 
-          case OperatorInfo.Star:
+          case OperatorInfo.StarOperator:
             valst.Push(_factory.MakeMultiplication(a[1], a[0]));
             break;
 
-          case OperatorInfo.Slash:
+          case OperatorInfo.SlashOperator:
             valst.Push(_factory.MakeDivision(a[1], a[0]));
             break;
 
-          case OperatorInfo.Hat:
+          case OperatorInfo.HatOperator:
             valst.Push(_factory.MakeExponentiation(a[1], a[0]));
             break;
 

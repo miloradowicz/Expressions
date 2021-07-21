@@ -79,7 +79,7 @@ namespace ExpressionEvaluatorLibrary
 
     public IReadOnlyCollection<string> GetBoundVariables()
     {
-      return _context.Keys.AsReadOnly();
+      return _context.Keys;
     }
 
     public bool IsBound(string variable)

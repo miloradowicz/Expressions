@@ -25,8 +25,12 @@ namespace ExpressionEvaluatorLibrary
       Unary,
       Binary,
       Function,
-      Other,
+      Special,
     }
+
+    internal delegate double UnaryAction(double op);
+
+    internal delegate double DelegateTwo(double op1, double op2);
 
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     internal class SymbolAttribute : Attribute
@@ -110,11 +114,11 @@ namespace ExpressionEvaluatorLibrary
 
     internal enum OperatorInfo
     {
-      [Symbol("("), Type(OperatorType.Other), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(0)]
+      [Symbol("("), Type(OperatorType.Special), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(0)]
       LeftParenthesis,
 
-      [Symbol(")"), Type(OperatorType.Other), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(0)]
-      RightParenthesis,
+      //[Symbol(")"), Type(OperatorType.Special), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(0)]
+      //RightParenthesis,
 
       [Symbol("sin"), Type(OperatorType.Function), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(1)]
       SinFunction,
@@ -141,25 +145,25 @@ namespace ExpressionEvaluatorLibrary
       LogFunction,
 
       [Symbol("+"), Type(OperatorType.Unary), Priority(PriorityGroup.Unary), Associativity(Associativity.Left), Arity(1)]
-      UnaryPlus,
+      UnaryPlusOperator,
 
       [Symbol("-"), Type(OperatorType.Unary), Priority(PriorityGroup.Unary), Associativity(Associativity.Left), Arity(1)]
-      UnaryMinus,
+      UnaryMinusOperator,
 
       [Symbol("^"), Type(OperatorType.Binary), Priority(PriorityGroup.Exponentiative), Associativity(Associativity.Right), Arity(2)]
-      Hat,
+      HatOperator,
 
       [Symbol("*"), Type(OperatorType.Binary), Priority(PriorityGroup.Multiplicative), Associativity(Associativity.Left), Arity(2)]
-      Star,
+      StarOperator,
 
       [Symbol("/"), Type(OperatorType.Binary), Priority(PriorityGroup.Multiplicative), Associativity(Associativity.Left), Arity(2)]
-      Slash,
+      SlashOperator,
 
       [Symbol("+"), Type(OperatorType.Binary), Priority(PriorityGroup.Additive), Associativity(Associativity.Left), Arity(2)]
-      Plus,
+      PlusOperator,
 
       [Symbol("-"), Type(OperatorType.Binary), Priority(PriorityGroup.Additive), Associativity(Associativity.Left), Arity(2)]
-      Minus,
+      MinusOperator,
     }
   }
 }
