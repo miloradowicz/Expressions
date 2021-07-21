@@ -30,7 +30,7 @@ namespace ExpressionEvaluatorLibrary
 
     public IReadOnlyCollection<string> GetVariables()
     {
-      return _variables.AsReadOnly();
+      return _variables;
     }
 
     public Constant MakeConstant(double value)

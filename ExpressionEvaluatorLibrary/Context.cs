@@ -3,30 +3,79 @@ using System.Collections.Generic;
 
 namespace ExpressionEvaluatorLibrary
 {
+  #region Read-Only Interface
+
   public interface IReadOnlyContext
   {
+    /// <summary>
+    /// The value of the specified variable.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
+    /// <returns></returns>
     double this[string variable] { get; }
 
-    IReadOnlyCollection<string> GetBoundVariables();
-
+    /// <summary>
+    /// Returns a copy of the context.
+    /// </summary>
+    /// <returns></returns>
     Context Clone();
 
+    /// <summary>
+    /// Returns a read-only collection of all bound variables.
+    /// </summary>
+    /// <returns></returns>
+    IReadOnlyCollection<string> GetBoundVariables();
+
+    /// <summary>
+    /// Checks if the variable is bound.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
+    /// <returns></returns>
     bool IsBound(string variable);
   }
 
+  #endregion Read-Only Interface
+
+  #region Read-Write Interface
+
   internal interface IContext : IReadOnlyContext
   {
-    IReadOnlyContext AsReadOnly();
-
+    /// <summary>
+    /// The value of the specified variable. If an unbound variable is being set, creates a binding.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
+    /// <returns></returns>
     new double this[string variable] { get; set; }
 
+    /// <summary>
+    /// Returns a read-only version of the context.
+    /// </summary>
+    /// <returns></returns>
+    IReadOnlyContext AsReadOnly();
+
+    /// <summary>
+    /// Binds the specified variable.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
+    /// <param name="value">The value to assign</param>
     void Bind(string variable, double value);
 
+    /// <summary>
+    /// Unbinds the specified variable.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
     void Unbind(string variable);
   }
 
+  #endregion Read-Write Interface
+
+  /// <summary>
+  /// Describes bindings of expression variables to their corresponding values.
+  /// </summary>
   public class Context : IContext
   {
+    #region Exceptions
+
     public class UnboundVariableException : Exception
     {
       public UnboundVariableException()
@@ -42,17 +91,24 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
-    private Dictionary<string, double> _context;
+    #endregion Exceptions
+
+    #region Fields
+
+    private readonly Dictionary<string, double> _context;
+
+    #endregion Fields
+
+    #region Constructors
 
     internal Context()
     {
       _context = new Dictionary<string, double>();
     }
 
-    public IReadOnlyContext AsReadOnly()
-    {
-      return new ReadOnlyContext(this);
-    }
+    #endregion Constructors
+
+    #region Public Properties
 
     public double this[string variable]
     {
@@ -69,6 +125,20 @@ namespace ExpressionEvaluatorLibrary
       }
     }
 
+    #endregion Public Properties
+
+    #region Public Methods
+
+    public IReadOnlyContext AsReadOnly()
+    {
+      return new ReadOnlyContext(this);
+    }
+
+    public void Bind(string variable, double value)
+    {
+      _context[variable] = value;
+    }
+
     public Context Clone()
     {
       Context c = new Context();
@@ -79,7 +149,7 @@ namespace ExpressionEvaluatorLibrary
 
     public IReadOnlyCollection<string> GetBoundVariables()
     {
-      return _context.Keys.AsReadOnly();
+      return _context.Keys;
     }
 
     public bool IsBound(string variable)
@@ -87,32 +157,45 @@ namespace ExpressionEvaluatorLibrary
       return _context.ContainsKey(variable);
     }
 
-    public void Bind(string variable, double value)
-    {
-      _context[variable] = value;
-    }
-
     public void Unbind(string variable)
     {
       _context.Remove(variable);
     }
+
+    #endregion Public Methods
   }
 
+  /// <summary>
+  /// Read-only wrapper aroung a context.
+  /// </summary>
   public class ReadOnlyContext : IReadOnlyContext
   {
-    private Context _context;
+    #region Fields
+
+    private readonly Context _context;
+
+    #endregion Fields
+
+    #region Constructors
 
     internal ReadOnlyContext(Context context)
     {
       _context = context;
     }
 
-    public double this[string variable]
+    #endregion Constructors
+
+    #region Public Properties
+
+    public double this[string variable] => _context[variable];
+
+    #endregion Public Properties
+
+    #region Public Methods
+
+    public Context Clone()
     {
-      get
-      {
-        return _context[variable];
-      }
+      return _context.Clone();
     }
 
     public IReadOnlyCollection<string> GetBoundVariables()
@@ -120,14 +203,11 @@ namespace ExpressionEvaluatorLibrary
       return _context.GetBoundVariables();
     }
 
-    public Context Clone()
-    {
-      return _context.Clone();
-    }
-
     public bool IsBound(string variable)
     {
       return _context.IsBound(variable);
     }
+
+    #endregion Public Methods
   }
 }
