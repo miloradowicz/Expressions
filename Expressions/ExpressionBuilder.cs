@@ -1,322 +1,16 @@
-﻿using ExpressionEvaluatorLibrary.ExpressionTree;
-using ExpressionEvaluatorLibrary.Operators;
+﻿using Expressions.ExpressionTree;
+using Expressions.Operators;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace ExpressionEvaluatorLibrary
+namespace Expressions
 {
   /// <summary>
   /// Represents a mathematical expression.
   /// </summary>
   public class ExpressionBuilder
   {
-    #region Exceptions
-
-    public class BadInputException : Exception
-    {
-      public BadInputException()
-      {
-      }
-
-      public BadInputException(string message) : base(message)
-      {
-      }
-
-      public BadInputException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class BadSyntaxException : Exception
-    {
-      public BadSyntaxException()
-      {
-      }
-
-      public BadSyntaxException(string message) : base(message)
-      {
-      }
-
-      public BadSyntaxException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class BadValueException : BadInputException
-    {
-      public BadValueException()
-      {
-      }
-
-      public BadValueException(string message) : base(message)
-      {
-      }
-
-      public BadValueException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class CannotDispatchException : BadSyntaxException
-    {
-      public CannotDispatchException()
-      {
-      }
-
-      public CannotDispatchException(string message) : base(message)
-      {
-      }
-
-      public CannotDispatchException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class CouldNotSolveException : SolveException
-    {
-      public CouldNotSolveException()
-      {
-      }
-
-      public CouldNotSolveException(string message) : base(message)
-      {
-      }
-
-      public CouldNotSolveException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class EmptyExpressionException : Exception
-    {
-      public EmptyExpressionException()
-      {
-      }
-
-      public EmptyExpressionException(string message) : base(message)
-      {
-      }
-
-      public EmptyExpressionException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class InvalidConstraintException : SolveException
-    {
-      public InvalidConstraintException()
-      {
-      }
-
-      public InvalidConstraintException(string message) : base(message)
-      {
-      }
-
-      public InvalidConstraintException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class InvalidVariableException : RuntimeException
-    {
-      public InvalidVariableException()
-      {
-      }
-
-      public InvalidVariableException(string message) : base(message)
-      {
-      }
-
-      public InvalidVariableException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class MismatchedParenthesesException : BadSyntaxException
-    {
-      public MismatchedParenthesesException()
-      {
-      }
-
-      public MismatchedParenthesesException(string message) : base(message)
-      {
-      }
-
-      public MismatchedParenthesesException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class MissingArgumentException : BadSyntaxException
-    {
-      public MissingArgumentException()
-      {
-      }
-
-      public MissingArgumentException(string message) : base(message)
-      {
-      }
-
-      public MissingArgumentException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class OperandExpectedExcpetion : BadSyntaxException
-    {
-      public OperandExpectedExcpetion()
-      {
-      }
-
-      public OperandExpectedExcpetion(string message) : base(message)
-      {
-      }
-
-      public OperandExpectedExcpetion(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class OperatorExpectedException : BadSyntaxException
-    {
-      public OperatorExpectedException()
-      {
-      }
-
-      public OperatorExpectedException(string message) : base(message)
-      {
-      }
-
-      public OperatorExpectedException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class RuntimeException : Exception
-    {
-      public RuntimeException()
-      {
-      }
-
-      public RuntimeException(string message) : base(message)
-      {
-      }
-
-      public RuntimeException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class SolveException : Exception
-    {
-      public SolveException()
-      {
-      }
-
-      public SolveException(string message) : base(message)
-      {
-      }
-
-      public SolveException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class TooManyArgumentsException : BadSyntaxException
-    {
-      public TooManyArgumentsException()
-      {
-      }
-
-      public TooManyArgumentsException(string message) : base(message)
-      {
-      }
-
-      public TooManyArgumentsException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class UnboundVariableException : RuntimeException
-    {
-      public UnboundVariableException()
-      {
-      }
-
-      public UnboundVariableException(string message) : base(message)
-      {
-      }
-
-      public UnboundVariableException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class UninitializedException : RuntimeException
-    {
-      public UninitializedException()
-      {
-      }
-
-      public UninitializedException(string message) : base(message)
-      {
-      }
-
-      public UninitializedException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class UnrecognizedSymbolException : BadInputException
-    {
-      public UnrecognizedSymbolException()
-      {
-      }
-
-      public UnrecognizedSymbolException(string message) : base(message)
-      {
-      }
-
-      public UnrecognizedSymbolException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class UnsupportedFunctionException : BadInputException
-    {
-      public UnsupportedFunctionException()
-      {
-      }
-
-      public UnsupportedFunctionException(string message) : base(message)
-      {
-      }
-
-      public UnsupportedFunctionException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    public class UnsupportedOperationException : BadInputException
-    {
-      public UnsupportedOperationException()
-      {
-      }
-
-      public UnsupportedOperationException(string message) : base(message)
-      {
-      }
-
-      public UnsupportedOperationException(string message, Exception inner) : base(message, inner)
-      {
-      }
-    }
-
-    #endregion Exceptions
-
-    #region Static Fields
-
     private static readonly Regex TokenRegex = new Regex(@"
       ^\s*
       (?<token>
@@ -355,17 +49,9 @@ namespace ExpressionEvaluatorLibrary
       $
       ", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
-    #endregion Static Fields
-
-    #region Fields
-
     private string _expression;
     private Factory _factory;
     private IValuable _tree;
-
-    #endregion Fields
-
-    #region Constructors
 
     /// <summary>
     /// Constructs an expression object from expression string.
@@ -384,32 +70,11 @@ namespace ExpressionEvaluatorLibrary
       _tree = ShuntingYard(expression);
     }
 
-    #endregion Constructors
-
-    #region Enums
-
     private enum State
     {
       ExpectOperand,
       ExpectOperator
     };
-
-    #endregion Enums
-
-    #region Static Methods
-
-    /// <summary>
-    /// Creates an empty context.
-    /// </summary>
-    /// <returns></returns>
-    static public Context CreateContext()
-    {
-      return new Context();
-    }
-
-    #endregion Static Methods
-
-    #region Public Methods
 
     /// <summary>
     /// Evaluates the expression for the specified context.
@@ -486,10 +151,6 @@ namespace ExpressionEvaluatorLibrary
 
       return Steffensen(clonetext, unknown, error, steps);
     }
-
-    #endregion Public Methods
-
-    #region Private Methods
 
     private IValuable ShuntingYard(string expression)
     {
@@ -596,7 +257,7 @@ namespace ExpressionEvaluatorLibrary
             else if (m.Groups["unariable"].Success)
             {
               string p = m.Groups["unariable"].Value;
-              opst.Push(Helpers.GetUnary(p));
+              opst.Push(Helpers.FindUnary(p));
             }
             else if (m.Groups["function"].Success)
             {
@@ -604,7 +265,7 @@ namespace ExpressionEvaluatorLibrary
                 throw new UnsupportedFunctionException();
 
               string f = m.Groups["function"].Value;
-              opst.Push(Helpers.GetFunction(f));
+              opst.Push(Helpers.FindFunction(f));
             }
             else if (m.Groups["operand"].Success)
             {
@@ -678,14 +339,14 @@ namespace ExpressionEvaluatorLibrary
                 throw new UnsupportedOperationException();
 
               string p = m.Groups["operator"].Value;
-              OperatorInfo oc = Helpers.GetBinary(p);
+              OperatorInfo oc = Helpers.FindBinary(p);
               bool inorder = false;
 
               while (opst.Count != 0 && !inorder)
               {
                 OperatorInfo os = opst.Peek();
 
-                if (os.GetPriority() != PriorityGroup.Primary && (oc.GetPriority() > os.GetPriority() || oc.GetPriority() == os.GetPriority() && oc.GetAssociativity() == Associativity.Left))
+                if (os.GetPriority() != Priority.Primary && (oc.GetPriority() > os.GetPriority() || oc.GetPriority() == os.GetPriority() && oc.GetAssociativity() == Associativity.Left))
                   dispatch();
                 else
                   inorder = true;
@@ -745,7 +406,5 @@ namespace ExpressionEvaluatorLibrary
 
       return context[unknown];
     }
-
-    #endregion Private Methods
   }
 }
