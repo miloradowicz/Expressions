@@ -1,29 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Expressions.ExpressionTree
 {
-  internal sealed class FunctionOne : UnaryOperation
+  internal class FunctionOne : Function<Func<double, double>>
   {
-    private static readonly Dictionary<string, UnaryDelegate> Functions = new Dictionary<string, UnaryDelegate>()
-    {
-      { "sin", Math.Sin },
-      { "cos", Math.Cos },
-      { "tan", Math.Tan },
-      { "asin", Math.Asin },
-      { "acos", Math.Acos },
-      { "atan", Math.Atan },
-      { "exp", Math.Exp },
-      { "log", Math.Log },
-    };
-
-    public FunctionOne(string name, IValuable argument) : base(name, argument)
+    public FunctionOne(string name, Func<double, double> function, params IValuable[] arguments) : base(name, function, arguments)
     {
     }
 
-    protected override UnaryDelegate GetAction()
-    {
-      return Functions[_name];
-    }
+    public override double Evaluate(IReadOnlyContext context) => _function(_arguments[0].Evaluate(context));
   }
 }

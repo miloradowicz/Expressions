@@ -1,6 +1,7 @@
 ﻿using Expressions.ExpressionTree;
 using Expressions.Operators;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -50,8 +51,9 @@ namespace Expressions
       ", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
     private string _expression;
-    private Factory _factory;
+    private int _position;
     private IValuable _tree;
+    private HashSet<string> _variables;
 
     /// <summary>
     /// Constructs an expression object from expression string.
@@ -59,13 +61,17 @@ namespace Expressions
     /// <param name="expression"></param>
     public ExpressionBuilder(string expression)
     {
+      if (expression == null)
+        throw new ArgumentNullException("The expression string cannot be null.");
+
       expression = expression.Trim();
 
       if (expression.Length == 0)
-        throw new EmptyExpressionException();
+        throw new ArgumentException("No expression was given.");
 
       _expression = expression;
-      _factory = new Factory();
+      _position = 0;
+      _variables = new HashSet<string>();
 
       _tree = ShuntingYard(expression);
     }
@@ -103,7 +109,13 @@ namespace Expressions
       if (_tree == null)
         throw new UninitializedException();
 
-      return $"strict graph {{{_factory.GetListing()}}}";
+      return
+        $@"digraph
+{{
+labelloc=t
+label=""{_expression}""
+{Factory.GetListing(_tree)}
+}}";
     }
 
     /// <summary>
@@ -115,7 +127,7 @@ namespace Expressions
       if (_tree == null)
         throw new UninitializedException();
 
-      return _factory.GetVariables();
+      return _variables.ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -176,63 +188,63 @@ namespace Expressions
         switch (p)
         {
           case OperatorInfo.UnaryPlusOperator:
-            valst.Push(_factory.MakePositive(a[0]));
+            valst.Push(Factory.MakePositive(a[0]));
             break;
 
           case OperatorInfo.UnaryMinusOperator:
-            valst.Push(_factory.MakeNegative(a[0]));
+            valst.Push(Factory.MakeNegative(a[0]));
             break;
 
           case OperatorInfo.PlusOperator:
-            valst.Push(_factory.MakeAddition(a[1], a[0]));
+            valst.Push(Factory.MakeAddition(a[1], a[0]));
             break;
 
           case OperatorInfo.MinusOperator:
-            valst.Push(_factory.MakeSubtraction(a[1], a[0]));
+            valst.Push(Factory.MakeSubtraction(a[1], a[0]));
             break;
 
           case OperatorInfo.StarOperator:
-            valst.Push(_factory.MakeMultiplication(a[1], a[0]));
+            valst.Push(Factory.MakeMultiplication(a[1], a[0]));
             break;
 
           case OperatorInfo.SlashOperator:
-            valst.Push(_factory.MakeDivision(a[1], a[0]));
+            valst.Push(Factory.MakeDivision(a[1], a[0]));
             break;
 
           case OperatorInfo.HatOperator:
-            valst.Push(_factory.MakeExponentiation(a[1], a[0]));
+            valst.Push(Factory.MakeExponentiation(a[1], a[0]));
             break;
 
           case OperatorInfo.SinFunction:
-            valst.Push(_factory.MakeSinFunction(a[0]));
+            valst.Push(Factory.MakeSinFunction(a[0]));
             break;
 
           case OperatorInfo.CosFunction:
-            valst.Push(_factory.MakeCosFunction(a[0]));
+            valst.Push(Factory.MakeCosFunction(a[0]));
             break;
 
           case OperatorInfo.TanFunction:
-            valst.Push(_factory.MakeTanFunction(a[0]));
+            valst.Push(Factory.MakeTanFunction(a[0]));
             break;
 
           case OperatorInfo.AsinFunction:
-            valst.Push(_factory.MakeAsinFunction(a[0]));
+            valst.Push(Factory.MakeAsinFunction(a[0]));
             break;
 
           case OperatorInfo.AcosFunction:
-            valst.Push(_factory.MakeAcosFunction(a[0]));
+            valst.Push(Factory.MakeAcosFunction(a[0]));
             break;
 
           case OperatorInfo.AtanFunction:
-            valst.Push(_factory.MakeAtanFunction(a[0]));
+            valst.Push(Factory.MakeAtanFunction(a[0]));
             break;
 
           case OperatorInfo.ExpFunction:
-            valst.Push(_factory.MakeExpFunction(a[0]));
+            valst.Push(Factory.MakeExpFunction(a[0]));
             break;
 
           case OperatorInfo.LogFunction:
-            valst.Push(_factory.MakeLogFunction(a[0]));
+            valst.Push(Factory.MakeLogFunction(a[0]));
             break;
 
           case OperatorInfo.LeftParenthesis:
@@ -274,7 +286,7 @@ namespace Expressions
                 try
                 {
                   double c = Convert.ToDouble(m.Groups["constant"].Value);
-                  valst.Push(_factory.MakeConstant(c));
+                  valst.Push(Factory.MakeConstant(c));
                 }
                 catch (OverflowException)
                 {
@@ -284,7 +296,8 @@ namespace Expressions
               else if (m.Groups["variable"].Success)
               {
                 string v = m.Groups["variable"].Value;
-                valst.Push(_factory.MakeVariable(v));
+                valst.Push(Factory.MakeVariable(v));
+                _variables.Add(v);
               }
 
               state = State.ExpectOperator;

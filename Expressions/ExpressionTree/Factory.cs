@@ -1,180 +1,165 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Expressions.Operators;
 
 namespace Expressions.ExpressionTree
 {
-  internal class Factory
+  using DelegateZero = Func<double>;
+  using DelegateOne = Func<double, double>;
+  using DelegateTwo = Func<double, double, double>;
+
+  internal static class Factory
   {
-    private int _counter;
-    private string _listing;
-    private Dictionary<IValuable, int> _nodes;
-    private HashSet<string> _variables;
-
-    public Factory()
+    private static Dictionary<OperatorInfo, Delegate> funcs = new Dictionary<OperatorInfo, Delegate>
     {
-      _listing = "\n";
-      _counter = 0;
-      _variables = new HashSet<string>();
-      _nodes = new Dictionary<IValuable, int>();
+      { OperatorInfo.SinFunction, (DelegateOne)((x) => Math.Sin(x)) },
+      { OperatorInfo.CosFunction, (DelegateOne)((x) => Math.Cos(x)) },
+      { OperatorInfo.TanFunction, (DelegateOne)((x) => Math.Tan(x)) },
+      { OperatorInfo.AsinFunction, (DelegateOne)((x) => Math.Asin(x)) },
+      { OperatorInfo.AcosFunction, (DelegateOne)((x) => Math.Acos(x)) },
+      { OperatorInfo.AtanFunction, (DelegateOne)((x) => Math.Atan(x)) },
+      { OperatorInfo.ExpFunction, (DelegateOne)((x) => Math.Exp(x)) },
+      { OperatorInfo.LogFunction, (DelegateOne)((x) => Math.Log(x)) },
+      { OperatorInfo.UnaryPlusOperator, (DelegateOne)((x) => x) },
+      { OperatorInfo.UnaryMinusOperator, (DelegateOne)((x) => -x) },
+      { OperatorInfo.HatOperator, (DelegateTwo)((x, y) => Math.Pow(x, y)) },
+      { OperatorInfo.StarOperator, (DelegateTwo)((x, y) => x * y) },
+      { OperatorInfo.SlashOperator, (DelegateTwo)((x, y) => x / y) },
+      { OperatorInfo.PlusOperator, (DelegateTwo)((x, y) => x + y) },
+      { OperatorInfo.MinusOperator, (DelegateTwo)((x, y) => x - y) }
+    };
+
+    public static StringBuilder GetListing(IValuable root) => TopDown(root);
+
+    public static FunctionOne MakeAcosFunction(IValuable argument)
+    {
+      OperatorInfo f = OperatorInfo.AcosFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public string GetListing()
+    public static FunctionTwo MakeAddition(IValuable operand1, IValuable operand2)
     {
-      return _listing;
+      OperatorInfo f = OperatorInfo.PlusOperator;
+      return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
     }
 
-    public IReadOnlyCollection<string> GetVariables()
+    public static FunctionOne MakeAsinFunction(IValuable argument)
     {
-      return _variables;
+      OperatorInfo f = OperatorInfo.AsinFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public FunctionOne MakeAcosFunction(IValuable argument)
+    public static FunctionOne MakeAtanFunction(IValuable argument)
     {
-      FunctionOne function = new FunctionOne("acos", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.AtanFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public BinaryOperation MakeAddition(IValuable operand1, IValuable operand2)
+    public static Constant MakeConstant(double value) => new Constant(value);
+
+    public static FunctionOne MakeCosFunction(IValuable argument)
     {
-      BinaryOperation binary = new BinaryOperation("+", operand1, operand2);
-      _nodes[binary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
-      _counter++;
-      return binary;
+      OperatorInfo f = OperatorInfo.CosFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public FunctionOne MakeAsinFunction(IValuable argument)
+    public static FunctionTwo MakeDivision(IValuable operand1, IValuable operand2)
     {
-      FunctionOne function = new FunctionOne("asin", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.SlashOperator;
+      return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
     }
 
-    public FunctionOne MakeAtanFunction(IValuable argument)
+    public static FunctionOne MakeExpFunction(IValuable argument)
     {
-      FunctionOne function = new FunctionOne("atan", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.ExpFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public Constant MakeConstant(double value)
+    public static FunctionTwo MakeExponentiation(IValuable operand1, IValuable operand2)
     {
-      Constant constant = new Constant(value);
-      _nodes[constant] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label={constant.Symbol}] ;\n";
-      _counter++;
-      return constant;
+      OperatorInfo f = OperatorInfo.HatOperator;
+      return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
     }
 
-    public FunctionOne MakeCosFunction(IValuable argument)
+    public static FunctionOne MakeLogFunction(IValuable argument)
     {
-      FunctionOne function = new FunctionOne("cos", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.LogFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public BinaryOperation MakeDivision(IValuable operand1, IValuable operand2)
+    public static FunctionTwo MakeMultiplication(IValuable operand1, IValuable operand2)
     {
-      BinaryOperation binary = new BinaryOperation("/", operand1, operand2);
-      _nodes[binary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
-      _counter++;
-      return binary;
+      OperatorInfo f = OperatorInfo.StarOperator;
+      return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
     }
 
-    public FunctionOne MakeExpFunction(IValuable argument)
+    public static FunctionOne MakeNegative(IValuable operand)
     {
-      FunctionOne function = new FunctionOne("exp", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.UnaryMinusOperator;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], operand);
     }
 
-    public BinaryOperation MakeExponentiation(IValuable operand1, IValuable operand2)
+    public static IValuable MakePositive(IValuable operand) => operand;
+
+    public static FunctionOne MakeSinFunction(IValuable argument)
     {
-      BinaryOperation binary = new BinaryOperation("^", operand1, operand2);
-      _nodes[binary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
-      _counter++;
-      return binary;
+      OperatorInfo f = OperatorInfo.SinFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public FunctionOne MakeLogFunction(IValuable argument)
+    public static FunctionTwo MakeSubtraction(IValuable operand1, IValuable operand2)
     {
-      FunctionOne function = new FunctionOne("log", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
+      OperatorInfo f = OperatorInfo.MinusOperator;
+      return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
     }
 
-    public BinaryOperation MakeMultiplication(IValuable operand1, IValuable operand2)
+    public static FunctionOne MakeTanFunction(IValuable argument)
     {
-      BinaryOperation binary = new BinaryOperation("*", operand1, operand2);
-      _nodes[binary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
-      _counter++;
-      return binary;
+      OperatorInfo f = OperatorInfo.TanFunction;
+      return new FunctionOne(f.GetSymbol(), (DelegateOne)funcs[f], argument);
     }
 
-    public UnaryOperation MakeNegative(IValuable operand)
-    {
-      UnaryOperation unary = new UnaryOperation("-", operand);
-      _nodes[unary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{unary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand]:0000} ;\n";
-      _counter++;
-      return unary;
-    }
+    public static Variable MakeVariable(string name) => new Variable(name);
 
-    public IValuable MakePositive(IValuable operand)
+    private static StringBuilder TopDown(IValuable root)
     {
-      return operand;
-    }
+      StringBuilder listing = new StringBuilder();
 
-    public FunctionOne MakeSinFunction(IValuable argument)
-    {
-      FunctionOne function = new FunctionOne("sin", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
-    }
+      if (root == null)
+        return listing;
 
-    public BinaryOperation MakeSubtraction(IValuable operand1, IValuable operand2)
-    {
-      BinaryOperation binary = new BinaryOperation("-", operand1, operand2);
-      _nodes[binary] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{binary.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[operand1]:0000} ;\n  n{_counter:0000} -- n{_nodes[operand2]:0000} ;\n";
-      _counter++;
-      return binary;
-    }
+      int behind, ahead;
+      behind = ahead = -1;
+      Queue<IValuable> q = new Queue<IValuable>();
 
-    public FunctionOne MakeTanFunction(IValuable argument)
-    {
-      FunctionOne function = new FunctionOne("tan", argument);
-      _nodes[function] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label=\"{function.Symbol}\"] ;\n  n{_counter:0000} -- n{_nodes[argument]:0000} ;\n";
-      _counter++;
-      return function;
-    }
+      q.Enqueue(root);
+      ahead++;
+      while (q.Count > 0)
+      {
+        IValuable node = q.Dequeue();
+        behind++;
+        if (node == null)
+          throw new ArgumentNullException("The expression tree is invalid.");
 
-    public Variable MakeVariable(string name)
-    {
-      _variables.Add(name);
-      Variable variable = new Variable(name);
-      _nodes[variable] = _counter;
-      _listing += $"  n{_counter:0000} ;\n  n{_counter:0000} [label={variable.Symbol}] ;\n";
-      _counter++;
-      return variable;
+        listing.Append($@"
+  n{behind:0000} ;
+  n{behind:0000} [label=""{node.Symbol}""] ;");
+
+        if (node is IFunction f)
+        {
+          foreach (var a in f.Arguments)
+          {
+            q.Enqueue(a);
+            ahead++;
+
+            listing.Append($@"
+  n{behind:0000} -> n{ahead:0000} ;");
+          }
+        }
+      }
+
+      return listing;
     }
   }
 }

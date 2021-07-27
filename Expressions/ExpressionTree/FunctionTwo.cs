@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Expressions.ExpressionTree
 {
-  internal sealed class FunctionTwo : BinaryOperation
+  internal class FunctionTwo : Function<Func<double, double, double>>
   {
-    private static readonly Dictionary<string, BinaryDelegate> Functions = new Dictionary<string, BinaryDelegate>
-    {
-    };
-
-    public FunctionTwo(string name, IValuable argument1, IValuable argument2) : base(name, argument1, argument2)
+    public FunctionTwo(string name, Func<double, double, double> function, params IValuable[] arguments) : base(name, function, arguments)
     {
     }
 
-    protected override BinaryDelegate GetAction()
-    {
-      return Functions[_name];
-    }
+    public override double Evaluate(IReadOnlyContext context) => _function(_arguments[0].Evaluate(context), _arguments[1].Evaluate(context));
   }
 }
