@@ -15,7 +15,7 @@ namespace Expressions
 
     static Helpers()
     {
-      var fields = typeof(OperatorInfo).GetFields();
+      var fields = typeof(OperatorInfo).GetFields(BindingFlags.Static | BindingFlags.Public);
 
       foreach (var f in fields)
       {
@@ -85,6 +85,8 @@ namespace Expressions
     internal static OperatorType GetOperatorType(this OperatorInfo operatorInfo) => operators[operatorInfo].Item2;
 
     internal static Priority GetPriority(this OperatorInfo operatorInfo) => operators[operatorInfo].Item3;
+
+    internal static string GetSymbol(this OperatorInfo operatorInfo) => operators[operatorInfo].Item1;
 
     private static int GetArity(FieldInfo f)
     {
