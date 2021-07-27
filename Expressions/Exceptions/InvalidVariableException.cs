@@ -2,7 +2,7 @@
 
 namespace Expressions
 {
-  public class InvalidVariableException : RuntimeException
+  public class InvalidVariableException : SolveException
   {
     public InvalidVariableException()
     {

@@ -4,19 +4,13 @@
   {
     private readonly string _name;
 
-    public Variable(string name)
-    {
-      _name = name;
-    }
+    public Variable(string name) => _name = name;
 
     public string Symbol
     {
-      get { return _name; }
+      get => _name;
     }
 
-    public double Evaluate(IReadOnlyContext context)
-    {
-      return context[_name];
-    }
+    public double Evaluate(IReadOnlyContext context) => context[_name];
   }
 }

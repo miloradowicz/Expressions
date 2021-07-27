@@ -6,22 +6,13 @@ namespace Expressions.ExpressionTree
   {
     private readonly double _value;
 
-    public Constant(double value)
-    {
-      _value = value;
-    }
+    public Constant(double value) => _value = value;
 
     public string Symbol
     {
-      get
-      {
-        return Convert.ToString(_value);
-      }
+      get => Convert.ToString(_value);
     }
 
-    public double Evaluate(IReadOnlyContext context)
-    {
-      return _value;
-    }
+    public double Evaluate(IReadOnlyContext context) => _value;
   }
 }

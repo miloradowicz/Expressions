@@ -8,8 +8,11 @@
     [Symbol("("), OperatorType(OperatorType.Special), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(0)]
     LeftParenthesis,
 
-    //[Symbol(")"), Type(OperatorType.Special), Priority(PriorityGroup.Primary), Associativity(Associativity.Left), Arity(0)]
+    //[Symbol(")"), OperatorType(OperatorType.Special), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(0)]
     //RightParenthesis,
+
+    //[Symbol(","), OperatorType(OperatorType.Special), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(0)]
+    //Comma,
 
     [Symbol("sin"), OperatorType(OperatorType.Function), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(1)]
     SinFunction,
