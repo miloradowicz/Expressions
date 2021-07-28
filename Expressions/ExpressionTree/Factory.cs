@@ -13,6 +13,7 @@ namespace Expressions.ExpressionTree
   {
     private static Dictionary<OperatorInfo, Delegate> funcs = new Dictionary<OperatorInfo, Delegate>
     {
+      { OperatorInfo.PiConstant, (DelegateZero)(() => Math.PI) },
       { OperatorInfo.SinFunction, (DelegateOne)((x) => Math.Sin(x)) },
       { OperatorInfo.CosFunction, (DelegateOne)((x) => Math.Cos(x)) },
       { OperatorInfo.TanFunction, (DelegateOne)((x) => Math.Tan(x)) },
@@ -92,6 +93,12 @@ namespace Expressions.ExpressionTree
     {
       OperatorInfo f = OperatorInfo.StarOperator;
       return new FunctionTwo(f.GetSymbol(), (DelegateTwo)funcs[f], operand1, operand2);
+    }
+
+    public static FunctionZero MakeNamedConstant(string name)
+    {
+      OperatorInfo f = Helpers.FindNamedConstant(name);
+      return new FunctionZero(f.GetSymbol(), (DelegateZero)funcs[f]);
     }
 
     public static FunctionOne MakeNegative(IValuable operand)

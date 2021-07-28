@@ -7,6 +7,7 @@
   {
     Operator,
     Function,
+    NamedConstant,
     Special,
   }
 }

@@ -43,6 +43,9 @@ namespace Expressions
         )(?=\() |
         (?<operand>
           (?<constant>\d+(?:\.\d+)?) |
+          (?<namedc>
+            (?<pi>pi)
+          ) |
           (?<variable>[a-z_][a-z_0-9]*)
         )
       )
@@ -281,11 +284,13 @@ label=""{_expression}""
             }
             else if (m.Groups["operand"].Success)
             {
+              string o = m.Groups["operand"].Value;
+
               if (m.Groups["constant"].Success)
               {
                 try
                 {
-                  double c = Convert.ToDouble(m.Groups["constant"].Value);
+                  double c = Convert.ToDouble(o);
                   valst.Push(Factory.MakeConstant(c));
                 }
                 catch (OverflowException)
@@ -293,11 +298,14 @@ label=""{_expression}""
                   throw new BadValueException();
                 }
               }
+              else if (m.Groups["namedc"].Success)
+              {
+                valst.Push(Factory.MakeNamedConstant(o));
+              }
               else if (m.Groups["variable"].Success)
               {
-                string v = m.Groups["variable"].Value;
-                valst.Push(Factory.MakeVariable(v));
-                _variables.Add(v);
+                valst.Push(Factory.MakeVariable(o));
+                _variables.Add(o);
               }
 
               state = State.ExpectOperator;

@@ -5,6 +5,8 @@
   /// </summary>
   internal enum OperatorInfo
   {
+    #region Special
+
     [Symbol("("), OperatorType(OperatorType.Special), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(0)]
     LeftParenthesis,
 
@@ -13,6 +15,17 @@
 
     //[Symbol(","), OperatorType(OperatorType.Special), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(0)]
     //Comma,
+
+    #endregion Special
+
+    #region Named Constants
+
+    [Symbol("pi"), OperatorType(OperatorType.NamedConstant), Priority(Priority.Primary), Associativity(Associativity.Undefined), Arity(0)]
+    PiConstant,
+
+    #endregion Named Constants
+
+    #region Functions
 
     [Symbol("sin"), OperatorType(OperatorType.Function), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(1)]
     SinFunction,
@@ -38,6 +51,10 @@
     [Symbol("log"), OperatorType(OperatorType.Function), Priority(Priority.Primary), Associativity(Associativity.Left), Arity(1)]
     LogFunction,
 
+    #endregion Functions
+
+    #region Operators
+
     [Symbol("+"), OperatorType(OperatorType.Operator), Priority(Priority.Unary), Associativity(Associativity.Left), Arity(1)]
     UnaryPlusOperator,
 
@@ -58,5 +75,7 @@
 
     [Symbol("-"), OperatorType(OperatorType.Operator), Priority(Priority.Additive), Associativity(Associativity.Left), Arity(2)]
     MinusOperator,
+
+    #endregion Operators
   }
 }

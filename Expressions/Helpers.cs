@@ -56,6 +56,17 @@ namespace Expressions
       return oplist.First();
     }
 
+    internal static OperatorInfo FindNamedConstant(string symbol)
+    {
+      var oplist = symbols[symbol]
+        .Where((op) => op.GetOperatorType() == OperatorType.NamedConstant);
+
+      if (oplist.Count() != 1)
+        throw new InvalidOperationException("Could not resolve the request.");
+
+      return oplist.First();
+    }
+
     internal static OperatorInfo FindSpecial(string symbol)
     {
       var oplist = symbols[symbol]
