@@ -50,7 +50,7 @@
     <Compile Include="Exceptions\EmptyExpressionException.cs" />
     <Compile Include="Exceptions\Base\BadInputException.cs" />
     <Compile Include="Exceptions\Base\BadSyntaxException.cs" />
-    <Compile Include="Exceptions\Base\BadValueException.cs" />
+    <Compile Include="Exceptions\BadValueException.cs" />
     <Compile Include="ExpressionTree\Base\IFunction.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="ExpressionBuilder.cs" />

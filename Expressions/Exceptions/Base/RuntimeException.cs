@@ -2,7 +2,7 @@
 
 namespace Expressions
 {
-  public class RuntimeException : Exception
+  public abstract class RuntimeException : Exception
   {
     public RuntimeException()
     {

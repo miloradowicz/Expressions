@@ -2,7 +2,7 @@
 
 namespace Expressions
 {
-  public class BadSyntaxException : Exception
+  public abstract class BadSyntaxException : Exception
   {
     public BadSyntaxException()
     {

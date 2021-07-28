@@ -5,7 +5,7 @@ namespace Expressions
   public interface IReadOnlyContext
   {
     /// <summary>
-    /// The value of the specified variable.
+    /// Gets the value of the specified variable.
     /// </summary>
     /// <param name="variable">The name of the variable</param>
     /// <returns></returns>
@@ -16,6 +16,13 @@ namespace Expressions
     /// </summary>
     /// <returns></returns>
     Context Clone();
+
+    /// <summary>
+    /// Returns the value of the specified variable.
+    /// </summary>
+    /// <param name="variable">The name of the variable</param>
+    /// <returns></returns>
+    double Get(string variable);
 
     /// <summary>
     /// Returns a read-only collection of all bound variables.

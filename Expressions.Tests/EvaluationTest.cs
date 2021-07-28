@@ -8,7 +8,7 @@ namespace Expressions.Tests
 {
   public class EvaluationTest
   {
-    private const double error = 0.000000000000001;
+    private const double error = 1E-40;
     private static readonly HttpClient _httpClient = new HttpClient();
     private readonly ITestOutputHelper _output;
 
@@ -20,6 +20,7 @@ namespace Expressions.Tests
     [InlineData("(8 - 1 + 3) * 6 - ((3 + 7) * 2)")]
     [InlineData("(121+(101+0))")]
     [InlineData("(3*(5+2)*(10-7))")]
+    [InlineData("1 - pi * sin(pi/0.355354)")]
     public void Arithmetic_Test(string expression)
     {
       ExpressionBuilder expr = new ExpressionBuilder(expression);
