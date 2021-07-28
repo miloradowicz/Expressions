@@ -1,8 +1,8 @@
 ﻿using Expressions.ExpressionTree;
 using Expressions.Operators;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Expressions
@@ -12,51 +12,55 @@ namespace Expressions
   /// </summary>
   public class ExpressionBuilder
   {
-    private static readonly Regex TokenRegex = new Regex(@"
-      ^\s*
-      (?<token>
-        (?<comma>,) |
-        (?<parenthesis>
-          (?<leftp>\() |
-          (?<rightp>\))
-        ) |
-        (?<operator>
-          (?<unariable>
-            (?<plus>\+) |
-            (?<minus>-)
-          ) |
-          (?<star>\*) |
-          (?<slash>/) |
-          (?<hat>\^) |
-          (?<unrecognized>[~!&|=<>%:\\])
-        ) |
-        (?<function>
-          (?<sin>sin) |
-          (?<cos>cos) |
-          (?<tan>tan) |
-          (?<asin>asin) |
-          (?<acos>acos) |
-          (?<atan>atan) |
-          (?<log>log) |
-          (?<exp>exp) |
-          (?<unrecognized>[a-z_][a-z_0-9]*)
-        )(?=\() |
-        (?<operand>
-          (?<constant>\d+(?:\.\d+)?) |
-          (?<namedc>
-            (?<pi>pi)
-          ) |
-          (?<variable>[a-z_][a-z_0-9]*)
-        )
-      )
-      (?<subexpr>.*)
-      $
-      ", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+    private static readonly Regex TokenRegex;
 
     private string _expression;
+
     private int _position;
+
     private IValuable _tree;
+
     private HashSet<string> _variables;
+
+    static ExpressionBuilder()
+    {
+      string specials = @"(?<comma>,)|(?<parenthesis>(?<leftp>\()|(?<rightp>\)))";
+
+      string unariables = $@"(?<unariable>{
+        string.Join("|",
+        OperatorInfo.GetUnaryOperators().Select((op) => $"(?<{op.Name}>{Regex.Escape(op.Symbol)})")
+        )})";
+
+      string binaries = $@"{
+        string.Join("|",
+        OperatorInfo.GetBinaryOperators().Select((op) => $"(?<{op.Name}>{Regex.Escape(op.Symbol)})")
+        )}";
+
+      string operators = $@"(?<operator>{
+        string.Join("|",
+        unariables,
+        binaries)})";
+
+      string functions = $@"(?<function>{
+        string.Join("|",
+        string.Join("|",
+        OperatorInfo.GetFunctions().Select((op) => $"(?<{op.Name}>{Regex.Escape(op.Symbol)})")
+        ),
+        "(?<unrecognized>[a-z_][a-z_0-9]*)"
+        )})(?=\()";
+
+      string operands = @"(?<operand>(?<constant>\d+(?:\.\d+)?)|(?<variable>[a-z_][a-z_0-9]*))";
+
+      string token = $@"(?<token>{
+        string.Join("|",
+        specials,
+        operators,
+        functions,
+        operands
+        )})";
+
+      TokenRegex = new Regex($@"^{token}\s*(?<subexpr>.*)$", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+    }
 
     /// <summary>
     /// Constructs an expression object from expression string.
@@ -178,84 +182,23 @@ label=""{_expression}""
       Action dispatch = () =>
       {
         OperatorInfo p = opst.Pop();
-        List<IValuable> a = new List<IValuable>();
+        IValuable[] a = new IValuable[p.Arity];
 
-        for (int i = 0; i < p.GetArity(); i++)
+        for (int i = p.Arity - 1; i >= 0; i--)
         {
           if (valst.Count != 0)
-            a.Add(valst.Pop());
+            a[i] = valst.Pop();
           else
             throw new MissingArgumentException();
         }
 
-        switch (p)
-        {
-          case OperatorInfo.UnaryPlusOperator:
-            valst.Push(Factory.MakePositive(a[0]));
-            break;
+        if (p == OperatorInfo.LeftParenthesis)
+          throw new MismatchedParenthesesException();
 
-          case OperatorInfo.UnaryMinusOperator:
-            valst.Push(Factory.MakeNegative(a[0]));
-            break;
+        if (p.OperatorType == OperatorType.Special)
+          throw new CannotDispatchException();
 
-          case OperatorInfo.PlusOperator:
-            valst.Push(Factory.MakeAddition(a[1], a[0]));
-            break;
-
-          case OperatorInfo.MinusOperator:
-            valst.Push(Factory.MakeSubtraction(a[1], a[0]));
-            break;
-
-          case OperatorInfo.StarOperator:
-            valst.Push(Factory.MakeMultiplication(a[1], a[0]));
-            break;
-
-          case OperatorInfo.SlashOperator:
-            valst.Push(Factory.MakeDivision(a[1], a[0]));
-            break;
-
-          case OperatorInfo.HatOperator:
-            valst.Push(Factory.MakeExponentiation(a[1], a[0]));
-            break;
-
-          case OperatorInfo.SinFunction:
-            valst.Push(Factory.MakeSinFunction(a[0]));
-            break;
-
-          case OperatorInfo.CosFunction:
-            valst.Push(Factory.MakeCosFunction(a[0]));
-            break;
-
-          case OperatorInfo.TanFunction:
-            valst.Push(Factory.MakeTanFunction(a[0]));
-            break;
-
-          case OperatorInfo.AsinFunction:
-            valst.Push(Factory.MakeAsinFunction(a[0]));
-            break;
-
-          case OperatorInfo.AcosFunction:
-            valst.Push(Factory.MakeAcosFunction(a[0]));
-            break;
-
-          case OperatorInfo.AtanFunction:
-            valst.Push(Factory.MakeAtanFunction(a[0]));
-            break;
-
-          case OperatorInfo.ExpFunction:
-            valst.Push(Factory.MakeExpFunction(a[0]));
-            break;
-
-          case OperatorInfo.LogFunction:
-            valst.Push(Factory.MakeLogFunction(a[0]));
-            break;
-
-          case OperatorInfo.LeftParenthesis:
-            throw new MismatchedParenthesesException();
-
-          default:
-            throw new CannotDispatchException();
-        }
+        valst.Push(Factory.MakeFunction(p, a));
       };
 
       while ((m = TokenRegex.Match(s)).Success)
@@ -272,7 +215,7 @@ label=""{_expression}""
             else if (m.Groups["unariable"].Success)
             {
               string p = m.Groups["unariable"].Value;
-              opst.Push(Helpers.FindUnary(p));
+              opst.Push(OperatorInfo.GetUnary(p));
             }
             else if (m.Groups["function"].Success)
             {
@@ -280,7 +223,7 @@ label=""{_expression}""
                 throw new UnsupportedFunctionException();
 
               string f = m.Groups["function"].Value;
-              opst.Push(Helpers.FindFunction(f));
+              opst.Push(OperatorInfo.GetFunction(f));
             }
             else if (m.Groups["operand"].Success)
             {
@@ -297,10 +240,6 @@ label=""{_expression}""
                 {
                   throw new BadValueException();
                 }
-              }
-              else if (m.Groups["namedc"].Success)
-              {
-                valst.Push(Factory.MakeNamedConstant(o));
               }
               else if (m.Groups["variable"].Success)
               {
@@ -334,7 +273,7 @@ label=""{_expression}""
 
               opst.Pop();
 
-              if (opst.Count != 0 && opst.Peek().GetOperatorType() == OperatorType.Function)
+              if (opst.Count != 0 && opst.Peek().OperatorType == OperatorType.Function)
                 dispatch();
             }
             else if (m.Groups["comma"].Success)
@@ -356,18 +295,15 @@ label=""{_expression}""
             }
             else if (m.Groups["operator"].Success)
             {
-              if (m.Groups["unrecognized"].Success)
-                throw new UnsupportedOperationException();
-
               string p = m.Groups["operator"].Value;
-              OperatorInfo oc = Helpers.FindBinary(p);
+              OperatorInfo oc = OperatorInfo.GetBinary(p);
               bool inorder = false;
 
               while (opst.Count != 0 && !inorder)
               {
                 OperatorInfo os = opst.Peek();
 
-                if (os.GetPriority() != Priority.Primary && (oc.GetPriority() > os.GetPriority() || oc.GetPriority() == os.GetPriority() && oc.GetAssociativity() == Associativity.Left))
+                if (os.Priority != Priority.Primary && (oc.Priority > os.Priority || oc.Priority == os.Priority && oc.Associativity == Associativity.Left))
                   dispatch();
                 else
                   inorder = true;

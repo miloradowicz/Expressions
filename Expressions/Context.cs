@@ -8,6 +8,15 @@ namespace Expressions
   /// </summary>
   public class Context : IContext
   {
+    private static readonly Dictionary<string, double> constants = new Dictionary<string, double>()
+    {
+      #region Named Constants
+
+      { "pi", Math.PI },
+
+      #endregion Named Constants
+    };
+
     private readonly Dictionary<string, double> _context;
 
     /// <summary>
@@ -21,17 +30,8 @@ namespace Expressions
 
     public double this[string variable]
     {
-      get
-      {
-        if (_context.ContainsKey(variable))
-          return _context[variable];
-        else
-          throw new InvalidOperationException("The specified variable is not bound in this context.");
-      }
-      set
-      {
-        _context[variable] = value;
-      }
+      get => Get(variable);
+      set => Bind(variable, value);
     }
 
     public IReadOnlyContext AsReadOnly()
@@ -41,6 +41,9 @@ namespace Expressions
 
     public void Bind(string variable, double value)
     {
+      if (constants.ContainsKey(variable))
+        throw new InvalidOperationException("Cannot reassign predefined constant.");
+
       _context[variable] = value;
     }
 
@@ -52,6 +55,17 @@ namespace Expressions
       return c;
     }
 
+    public double Get(string variable)
+    {
+      if (constants.ContainsKey(variable))
+        return constants[variable];
+
+      if (_context.ContainsKey(variable))
+        return _context[variable];
+      else
+        throw new InvalidOperationException("The specified variable is not bound in this context.");
+    }
+
     public IReadOnlyCollection<string> GetBoundVariables()
     {
       return _context.Keys;
@@ -59,17 +73,12 @@ namespace Expressions
 
     public bool IsBound(string variable)
     {
-      return _context.ContainsKey(variable);
+      return constants.ContainsKey(variable) || _context.ContainsKey(variable);
     }
 
     public void Unbind(string variable)
     {
       _context.Remove(variable);
-    }
-
-    internal bool ContainsKey(string variable)
-    {
-      throw new NotImplementedException();
     }
   }
 }

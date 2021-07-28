@@ -3,7 +3,7 @@
   internal interface IContext : IReadOnlyContext
   {
     /// <summary>
-    /// The value of the specified variable. If an unbound variable is being set, creates a binding.
+    /// Gets or sets the value of the specified variable. If an unbound variable is being set, creates a binding.
     /// </summary>
     /// <param name="variable">The name of the variable</param>
     /// <returns></returns>

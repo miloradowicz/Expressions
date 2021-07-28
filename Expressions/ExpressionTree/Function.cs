@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Expressions.ExpressionTree
 {
   internal class Function<T> : IFunction
     where T : Delegate
   {
-    internal readonly IValuable[] _arguments;
+    protected readonly IValuable[] _arguments;
     protected readonly T _function;
     protected readonly string _name;
     private int _arity;

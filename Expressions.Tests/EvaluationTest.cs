@@ -21,6 +21,7 @@ namespace Expressions.Tests
     [InlineData("(121+(101+0))")]
     [InlineData("(3*(5+2)*(10-7))")]
     [InlineData("1 - pi * sin(pi/0.355354)")]
+    [InlineData("pow(24*(54.231+523%654.234)-234*sqrt(5212.34)^log(412,5345),2)")]
     public void Arithmetic_Test(string expression)
     {
       ExpressionBuilder expr = new ExpressionBuilder(expression);
