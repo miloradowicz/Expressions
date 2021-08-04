@@ -25,7 +25,7 @@ namespace Expressions.ExpressionTree
 
     public ReadOnlyCollection<IValuable> Arguments
     {
-      get => _arguments.ToList().AsReadOnly();
+      get => Array.AsReadOnly(_arguments);
     }
 
     public string Symbol

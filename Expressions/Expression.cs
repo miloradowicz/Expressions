@@ -10,7 +10,7 @@ namespace Expressions
   /// <summary>
   /// Represents a mathematical expression.
   /// </summary>
-  public class ExpressionBuilder
+  public class Expression
   {
     private static readonly Regex TokenRegex;
 
@@ -22,7 +22,7 @@ namespace Expressions
 
     private HashSet<string> _variables;
 
-    static ExpressionBuilder()
+    static Expression()
     {
       string specials = @"(?<comma>,)|(?<parenthesis>(?<leftp>\()|(?<rightp>\)))";
 
@@ -66,7 +66,7 @@ namespace Expressions
     /// Constructs an expression object from expression string.
     /// </summary>
     /// <param name="expression"></param>
-    public ExpressionBuilder(string expression)
+    public Expression(string expression)
     {
       if (expression == null)
         throw new ArgumentNullException("The expression string cannot be null.");

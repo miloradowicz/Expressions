@@ -35,7 +35,7 @@ namespace Expressions.Tests
         (i) =>
         {
           var request = GetResults(expressions[i]);
-          var exprBuilder = new ExpressionBuilder(expressions[i]);
+          var exprBuilder = new Expression(expressions[i]);
           computed[i] = exprBuilder.Evaluate(context);
           expected[i] = request.Result;
         });
@@ -100,7 +100,7 @@ namespace Expressions.Tests
             substits[i] = substits[i].Replace(v, d.ToString("e55"));
           }
           var request = GetResults(substits[i]);
-          var exprBuilder = new ExpressionBuilder(expression);
+          var exprBuilder = new Expression(expression);
           computed[i] = exprBuilder.Evaluate(contexts[i]);
           expected[i] = request.Result;
         });

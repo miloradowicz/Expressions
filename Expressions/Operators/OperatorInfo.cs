@@ -5,8 +5,13 @@ using System.Reflection;
 
 namespace Expressions.Operators
 {
+  // This class among other purposes defines all supported operators and functions.
+  // To add a new function add another static field and instantiate an OperatorInfo object and specify its attributes,
+  // such as its priority, associativity and arity, as well as define the action that corresponds to the operator or function in question.
+  // Refer to the constructor summary to the constructor to get more info.
+
   /// <summary>
-  /// Represents operators
+  /// Represents algebraic syntax tokens
   /// </summary>
   internal class OperatorInfo
   {
@@ -76,6 +81,16 @@ namespace Expressions.Operators
       }
     }
 
+    /// <summary>
+    /// Constructs an instance to represent a syntax token
+    /// </summary>
+    /// <param name="symbol">The symbol of the token as it would appear in an expression string</param>
+    /// <param name="type">The type of the token</param>
+    /// <param name="priority">The priority group of an operator. Should be Primary for everything else</param>
+    /// <param name="associativity">The associativity of an operator. Should be left for everything else</param>
+    /// <param name="arity">The arity of an operator or a function</param>
+    /// <param name="delegate">A delegate that represents the action of an operator or a function</param>
+    /// <param name="name">A friendly name for the token</param>
     private OperatorInfo(string symbol, OperatorType type, Priority priority, Associativity associativity, int arity, Delegate @delegate, string name = null)
     {
       Symbol = symbol;

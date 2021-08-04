@@ -2,7 +2,7 @@
 
 namespace Expressions
 {
-  public class SolveException : Exception
+  public abstract class SolveException : Exception
   {
     public SolveException()
     {

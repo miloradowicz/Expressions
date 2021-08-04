@@ -2,7 +2,7 @@
 
 namespace Expressions
 {
-  public class BadInputException : Exception
+  public abstract class BadInputException : Exception
   {
     public BadInputException()
     {

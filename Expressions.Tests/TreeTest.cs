@@ -21,7 +21,7 @@ namespace Expressions.Tests
     [InlineData("exp(x / (x / x)) / exp(sin(x))")]
     public void Build_Trees(string expression)
     {
-      ExpressionBuilder expr = new ExpressionBuilder(expression);
+      Expression expr = new Expression(expression);
       string listing = expr.GetListing();
       _output.WriteLine(listing);
 
